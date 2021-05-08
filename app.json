@@ -1,0 +1,12 @@
+{
+  "name": "parkshare-frontend",
+  "displayName": "parkshare-frontend",
+  "expo": {
+    "name": "parkshare-frontend",
+    "slug": "parkshare-frontend",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  }
+}
