@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "841200999064",
+    "project_id": "parkshare-51e24",
+    "storage_bucket": "parkshare-51e24.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:841200999064:android:185c82f9b545c98b40ceed",
+        "android_client_info": {
+          "package_name": "com.parksharefrontend"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "841200999064-1dqu7ut22543otu9qd3lj897aev8jfq1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBuAPGma582vELigRF6xY7KOoctkWWeQbM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "841200999064-1dqu7ut22543otu9qd3lj897aev8jfq1.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
