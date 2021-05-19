@@ -7,11 +7,19 @@ const Login = ({ navigation }) => {
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const { signIn } = useAuth();
+    const { signIn, signInWithGoogle } = useAuth();
 
     async function signInUser(email, password) {
         try {
             await signIn(email, password)
+        } catch (error) {
+            alert(error.message)
+        }
+    }
+
+    async function signInUserWithGoogle() {
+        try {
+            await signInWithGoogle();
         } catch (error) {
             alert(error.message)
         }
@@ -24,6 +32,7 @@ const Login = ({ navigation }) => {
             <TextInput placeholder='Email' onChangeText={email => setEmail(email)} />
             <TextInput secureTextEntry placeholder='Contraseña' onChangeText={password => setPassword(password)} />
             <Button title="Iniciar Sesión" onPress={() => signInUser(email, password)} />
+            <Button title="Iniciar Sesión con Google" onPress={() => signInUserWithGoogle()} />
             <Text>¿No tiene cuenta?</Text>
             <Button title="Registrarse" onPress={() => navigation.navigate('Signup')} />
         </View >
