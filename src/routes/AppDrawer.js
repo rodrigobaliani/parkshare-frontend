@@ -4,8 +4,6 @@ import { Drawer, DrawerItem, IndexPath, Icon } from '@ui-kitten/components';
 import Home from '../components/Home';
 import { useAuth } from '../contexts/AuthContext';
 
-
-
 const { Navigator, Screen } = createDrawerNavigator();
 
 const renderHomeIcon = (props) => (
