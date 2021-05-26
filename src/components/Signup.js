@@ -11,6 +11,7 @@ import {
 import ImageOverlay from "react-native-image-overlay";
 import { useAuth } from '../contexts/AuthContext';
 import { getFirebaseErrorMessage } from '../constants/ErrorMessages'
+import SnackBar from 'react-native-snackbar-component'
 
 const Signup = ({ navigation }) => {
 
@@ -19,6 +20,7 @@ const Signup = ({ navigation }) => {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [passwordVisible, setPasswordVisible] = useState(false);
     const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
+    const [error, setError] = useState('')
 
     const { signUp, signInWithGoogle } = useAuth();
 
@@ -26,17 +28,17 @@ const Signup = ({ navigation }) => {
 
     async function registerUser(email, password) {
         try {
-            if (email === '' || password === '') {
-                return alert('No puede dejar campos vacios')
+            if (email === '' || password === '' || confirmPassword === '') {
+                return setError('Debe completar todos los campos')
             }
             if (password !== confirmPassword) {
-                return alert('Las contraseñas no coinciden')
+                return setError('Las contraseñas no coinciden')
             }
             await signUp(email, password);
         }
         catch (error) {
             const errorMessage = getFirebaseErrorMessage(error.code)
-            alert(errorMessage)
+            setError(errorMessage)
         }
     }
 
@@ -45,7 +47,7 @@ const Signup = ({ navigation }) => {
             await signInWithGoogle();
         } catch (error) {
             const errorMessage = getFirebaseErrorMessage(error.code)
-            alert(errorMessage)
+            setError(errorMessage)
         }
     }
 
@@ -158,6 +160,14 @@ const Signup = ({ navigation }) => {
                 >
                     ¿Ya tiene una cuenta? Inicie sesión
                 </Button>
+                <SnackBar
+                    visible={error.length > 0}
+                    textMessage={error}
+                    actionHandler={() => { setError('') }}
+                    actionText="OK"
+                    backgroundColor='#990000'
+                    accentColor='#ffffff'
+                />
             </ImageOverlay>
         </KeyboardAvoidingView>
     )

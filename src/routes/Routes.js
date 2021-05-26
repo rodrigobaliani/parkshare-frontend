@@ -4,7 +4,7 @@ import auth from '@react-native-firebase/auth';
 import AuthStack from './AuthStack';
 import Loading from '../components/layout/Loading';
 import { useAuth } from '../contexts/AuthContext';
-import AppStack from './AppStack';
+import AppDrawer from './AppDrawer';
 
 export default function Routes() {
     const { currentUser, setCurrentUser } = useAuth();
@@ -29,7 +29,7 @@ export default function Routes() {
 
     return (
         <NavigationContainer>
-            {currentUser ? <AppStack /> : <AuthStack />}
+            {currentUser ? <AppDrawer /> : <AuthStack />}
         </NavigationContainer>
     );
 }

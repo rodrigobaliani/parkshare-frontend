@@ -1,29 +1,30 @@
 import React from 'react'
-import { View, Text, StyleSheet, Button } from 'react-native'
-import auth from '@react-native-firebase/auth';
-import AsyncStorage from '@react-native-community/async-storage';
-import Login from './Login';
+import { View, Text, StyleSheet } from 'react-native'
 import { useAuth } from '../contexts/AuthContext';
+import { Icon, TopNavigation, TopNavigationAction } from '@ui-kitten/components';
 
 
-const Home = () => {
+const Home = ({ navigation }) => {
 
-    const { currentUser, signOut } = useAuth();
+    const { currentUser } = useAuth();
 
-    async function logout() {
-        try {
-            await signOut();
-        }
-        catch (error) {
-            alert(error.message);
-        }
-    }
+    const MenuIcon = (props) => (
+        <Icon {...props} name='menu-outline' />
+    );
+
+    const MenuAction = () => (
+        <TopNavigationAction icon={MenuIcon} onPress={() => navigation.toggleDrawer()} />
+    );
+
 
     return (
-        <View style={styles.container}>
-            <Text>Welcome {currentUser.email}</Text>
-            <Button title="Logout" onPress={() => logout()} />
-        </View>
+        <React.Fragment>
+            <TopNavigation accessoryLeft={MenuAction} />
+            <View style={styles.container}>
+                <Text>Welcome {currentUser.email}</Text>
+            </View>
+        </React.Fragment>
+
     )
 }
 

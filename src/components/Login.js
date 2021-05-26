@@ -4,23 +4,25 @@ import { useAuth } from '../contexts/AuthContext';
 import { getFirebaseErrorMessage } from '../constants/ErrorMessages'
 import { Button, Input, Text, Icon } from '@ui-kitten/components';
 import ImageOverlay from "react-native-image-overlay";
+import SnackBar from 'react-native-snackbar-component'
 
 const Login = ({ navigation }) => {
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [secureTextEntry, setSecureTextEntry] = useState(true);
+    const [error, setError] = useState('')
     const { signIn, signInWithGoogle } = useAuth();
 
     async function signInUser(email, password) {
         try {
             if (email === '' || password === '') {
-                return alert('No puede dejar campos vacios')
+                return setError('Debe completar email y contraseña')
             }
             await signIn(email, password)
         } catch (error) {
             const errorMessage = getFirebaseErrorMessage(error.code)
-            alert(errorMessage)
+            setError(errorMessage)
         }
     }
 
@@ -51,75 +53,84 @@ const Login = ({ navigation }) => {
         <Icon {...props} name='facebook' />
     );
 
-
     return (
         <KeyboardAvoidingView>
             <ImageOverlay source={{ uri: "https://somethingoffreedom.com/wp-content/uploads/2017/09/Obelisk-Buenos-Aires-Sights.jpg" }} height={660} contentPosition="bottom">
-                <View style={styles.container}>
-                    <View style={styles.headerContainer}>
-                        <Text category='h1' status='control'>
-                            Parkshare
+                <React.Fragment>
+                    <View style={styles.container}>
+                        <View style={styles.headerContainer}>
+                            <Text category='h1' status='control'>
+                                Parkshare
                         </Text>
-                        <Text style={styles.signInLabel} category='s1' status='control'>
-                            Ingrese a su cuenta
+                            <Text style={styles.signInLabel} category='s1' status='control'>
+                                Ingrese a su cuenta
                         </Text>
-                    </View>
-                    <View style={styles.formContainer}>
-                        <Input
-                            status='control'
-                            placeholder='Email'
-                            value={email}
-                            onChangeText={email => setEmail(email)}
-                        />
-                        <Input
-                            style={styles.passwordInput}
-                            status='control'
-                            placeholder='Contraseña'
-                            value={password}
-                            accessoryRight={renderPasswordIcon}
-                            secureTextEntry={secureTextEntry}
-                            onChangeText={password => setPassword(password)}
-                        />
-                        <View style={styles.forgotPasswordContainer}>
-                            <Button style={styles.forgotPasswordButton} appearance='ghost' status='control'>
-                                ¿Olvidaste tu contraseña?
+                        </View>
+                        <View style={styles.formContainer}>
+                            <Input
+                                status='control'
+                                placeholder='Email'
+                                value={email}
+                                onChangeText={email => setEmail(email)}
+                            />
+                            <Input
+                                style={styles.passwordInput}
+                                status='control'
+                                placeholder='Contraseña'
+                                value={password}
+                                accessoryRight={renderPasswordIcon}
+                                secureTextEntry={secureTextEntry}
+                                onChangeText={password => setPassword(password)}
+                            />
+                            <View style={styles.forgotPasswordContainer}>
+                                <Button style={styles.forgotPasswordButton} appearance='ghost' status='control'>
+                                    ¿Olvidaste tu contraseña?
                             </Button>
+                            </View>
                         </View>
-                    </View>
-                    <Button
-                        style={styles.signInButton}
-                        size='giant'
-                        onPress={() => signInUser(email, password)}
-                    >
-                        INICIAR SESIÓN
+                        <Button
+                            style={styles.signInButton}
+                            size='giant'
+                            onPress={() => signInUser(email, password)}
+                        >
+                            INICIAR SESIÓN
                     </Button>
-                    <View style={styles.socialAuthContainer}>
-                        <Text style={styles.socialAuthHintText} status='control'>
-                            O inicie sesión con redes sociales
+                        <View style={styles.socialAuthContainer}>
+                            <Text style={styles.socialAuthHintText} status='control'>
+                                O inicie sesión con redes sociales
                         </Text>
-                        <View style={styles.socialAuthButtonsContainer}>
-                            <Button
-                                appearance='ghost'
-                                status='control'
-                                size='giant'
-                                accessoryLeft={renderGoogleIcon}
-                                onPress={() => signInUserWithGoogle()}
-                            />
-                            <Button appearance='ghost'
-                                status='control'
-                                size='giant'
-                                accessoryLeft={renderFacebookIcon}
-                            />
+                            <View style={styles.socialAuthButtonsContainer}>
+                                <Button
+                                    appearance='ghost'
+                                    status='control'
+                                    size='giant'
+                                    accessoryLeft={renderGoogleIcon}
+                                    onPress={() => signInUserWithGoogle()}
+                                />
+                                <Button appearance='ghost'
+                                    status='control'
+                                    size='giant'
+                                    accessoryLeft={renderFacebookIcon}
+                                />
+                            </View>
                         </View>
-                    </View>
-                    <Button style={styles.signUpButton}
-                        appearance='ghost'
-                        status='control'
-                        onPress={() => navigation.navigate('Signup')}
-                    >
-                        ¿No tiene una cuenta? Registrese
+                        <Button style={styles.signUpButton}
+                            appearance='ghost'
+                            status='control'
+                            onPress={() => navigation.navigate('Signup')}
+                        >
+                            ¿No tiene una cuenta? Registrese
                     </Button>
-                </View>
+                    </View>
+                    <SnackBar
+                        visible={error.length > 0}
+                        textMessage={error}
+                        actionHandler={() => { setError('') }}
+                        actionText="OK"
+                        backgroundColor='#990000'
+                        accentColor='#ffffff'
+                    />
+                </React.Fragment>
             </ImageOverlay>
         </KeyboardAvoidingView>
     )
