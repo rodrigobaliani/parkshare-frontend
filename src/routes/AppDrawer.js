@@ -14,7 +14,6 @@ const renderSignOutIcon = (props) => (
     <Icon {...props} name='log-out-outline' />
 );
 
-
 export default function AppDrawer() {
 
     const { signOut } = useAuth();
