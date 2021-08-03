@@ -3,6 +3,8 @@ import { createDrawerNavigator } from '@react-navigation/drawer'
 import { Drawer, DrawerItem, IndexPath, Icon } from '@ui-kitten/components';
 import Home from '../components/Home';
 import { useAuth } from '../contexts/AuthContext';
+import AddParking from '../components/AddParking';
+import RouteParking from '../components/RouteParking';
 
 const { Navigator, Screen } = createDrawerNavigator();
 
@@ -39,6 +41,8 @@ export default function AppDrawer() {
     return (
         <Navigator drawerContent={props => <DrawerContent {...props} />}>
             <Screen name='Home' component={Home} />
+            <Screen name='AddParking' component={AddParking} />
+            <Screen name='RouteParking' component={RouteParking} />
         </Navigator>
     );
 }

@@ -10,7 +10,7 @@ export default function App() {
   return (
     <React.Fragment>
       <IconRegistry icons={EvaIconsPack} />
-      <ApplicationProvider {...eva} theme={eva.light}>
+      <ApplicationProvider {...eva} theme={eva.dark}>
         <Providers />
       </ApplicationProvider>
     </React.Fragment>

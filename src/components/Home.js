@@ -1,10 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { StyleSheet, Platform, PermissionsAndroid, Image, View } from 'react-native'
+import { StyleSheet, PermissionsAndroid, Image, View } from 'react-native'
 import { useAuth } from '../contexts/AuthContext';
-import { Icon, TopNavigation, TopNavigationAction, Button, Modal, Text, Card } from '@ui-kitten/components';
-import MapView, { PROVIDER_GOOGLE, Marker, Callout } from 'react-native-maps'
+import { Icon, Button, Modal, Text, Card } from '@ui-kitten/components';
+import MapView, { PROVIDER_GOOGLE, Marker } from 'react-native-maps'
 import SnackBar from 'react-native-snackbar-component'
 import Geolocation from '@react-native-community/geolocation';
+import TopMenu from './TopMenu';
+import { useStore } from '../contexts/StoreContext';
+import AddParking from './AddParking';
+import firestore from '@react-native-firebase/firestore';
+import moment from 'moment'
+
+
 
 
 const Home = ({ navigation }) => {
@@ -19,15 +26,10 @@ const Home = ({ navigation }) => {
     const [message, setMessage] = useState('')
     const [error, setError] = useState('')
     const { currentUser } = useAuth();
-    const [locationLatitude, setLatitude] = useState(initialLocation.latitude)
-    const [locationLongitude, setLongitude] = useState(initialLocation.longitude)
-    const [locationLatitudeDelta, setLatitudeDelta] = useState(initialLocation.latitudeDelta)
-    const [locationLongitudeDelta, setLongitudeDelta] = useState(initialLocation.longitudeDelta)
+    const [mapRegion, setMapRegion] = useState(initialLocation)
+    const [modalInfo, setModalInfo] = useState({ carBrand: '', carModel: '', carPlate: '', expiryTime: '', parkingId: '' })
     const [visibleModal, setVisibleModal] = useState(false)
-
-    const renderMenuIcon = (props) => (
-        <Icon {...props} name='menu-outline' size='giant' />
-    );
+    const { state, dispatch } = useStore();
 
     const renderLocationIcon = (props) => (
         <Icon {...props} name='navigation-2-outline' size='giant' />
@@ -37,14 +39,10 @@ const Home = ({ navigation }) => {
         <Icon {...props} name='plus-outline' size='giant' />
     );
 
-    const menuAction = () => (
-        <TopNavigationAction icon={renderMenuIcon} onPress={() => navigation.toggleDrawer()} />
-    );
-
     const cardHeader = (props) => (
         <View {...props}>
-            <Text category='h6'>Volkswagen Vento</Text>
-            <Text category='s1'>Patente: PSA-457</Text>
+            <Text category='h6'>{modalInfo.carBrand} {modalInfo.carModel}</Text>
+            <Text category='s1'>Patente: {modalInfo.carPlate}</Text>
         </View>
     );
 
@@ -53,22 +51,40 @@ const Home = ({ navigation }) => {
             <Button
                 style={styles.cardFooterControl}
                 size='small'
-                status='basic'
                 onPress={() => setVisibleModal(false)}
             >
                 CANCELAR
-          </Button>
+            </Button>
             <Button
                 style={styles.cardFooterControl}
                 size='small'
-                onPress={() => setVisibleModal(false)}
+                onPress={() => {
+                    setVisibleModal(false)
+                    Geolocation.getCurrentPosition((pos) => {
+                        const crd = pos.coords;
+                        const parking = state.parkings.filter((doc) => doc.id === modalInfo.parkingId)
+                        console.log(parking)
+                        const currentParking = {
+                            hostLat: parking[0].lat,
+                            hostLng: parking[0].lng,
+                            candidateLat: crd.latitude,
+                            candidateLng: crd.longitude,
+                            latDelta: mapRegion.latitudeDelta,
+                            lngDelta: mapRegion.longitudeDelta
+                        }
+                        console.log(currentParking)
+                        dispatch({ type: "setCurrentParking", payload: currentParking })
+                        navigation.navigate("RouteParking")
+                    }, error => alert(JSON.stringify(error)),
+                        { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 },
+                    );
+
+                }}
             >
                 RESERVAR
-          </Button>
+            </Button>
         </View>
     );
-
-
 
     const requestLocationPermission = async () => {
 
@@ -90,11 +106,22 @@ const Home = ({ navigation }) => {
 
     };
 
-
     useEffect(() => {
+        firestore()
+            .collection('parkings')
+            .get().then((querySnapshot) => {
+                querySnapshot.forEach((doc) => {
+                    const parking = {
+                        id: doc.id,
+                        ...doc.data()
+                    }
+                    dispatch({ type: "addParking", payload: parking })
+                });
+            })
         const welcomeMessage = `¡Bienvenido ${currentUser.email} !`
         setMessage(welcomeMessage);
     }, []);
+
 
     const handleLocationButtonPress = async () => {
         const chckLocationPermission = PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION);
@@ -103,20 +130,30 @@ const Home = ({ navigation }) => {
         }
         Geolocation.getCurrentPosition((pos) => {
             const crd = pos.coords;
-            setLatitude(crd.latitude);
-            setLongitude(crd.longitude);
+            const newRegion = {
+                latitude: crd.latitude,
+                longitude: crd.longitude,
+                latitudeDelta: mapRegion.latitudeDelta,
+                longitudeDelta: mapRegion.longitudeDelta
+            }
+            setMapRegion(newRegion)
         }, error => alert(JSON.stringify(error)),
             { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 },
         );
     }
 
-    const handleRegionChange = (region) => {
-        setLatitude(region.latitude);
-        setLongitude(region.longitude);
-        setLatitudeDelta(region.latitudeDelta);
-        setLongitudeDelta(region.longitudeDelta);
+    const getParkingInfo = (parkingId) => {
+        const parking = state.parkings.filter((doc) => doc.id === parkingId)
+        const expiryTime = moment(parking[0].expiryDate).minutes() - moment().minutes()
+        setModalInfo({
+            carBrand: parking[0].carBrand,
+            carModel: parking[0].carModel,
+            carPlate: parking[0].carPlate,
+            expiryTime: expiryTime,
+            parkingId: parkingId
+        })
+        setVisibleModal(true)
     }
-
 
     return (
         <React.Fragment>
@@ -124,12 +161,7 @@ const Home = ({ navigation }) => {
                 provider={PROVIDER_GOOGLE}
                 style={styles.map}
                 showsMyLocationButton={true}
-                region={{
-                    latitude: locationLatitude,
-                    longitude: locationLongitude,
-                    latitudeDelta: locationLatitudeDelta,
-                    longitudeDelta: locationLongitudeDelta,
-                }}
+                region={mapRegion}
                 showsPointsOfInterest={false}
                 customMapStyle={[
                     {
@@ -150,29 +182,22 @@ const Home = ({ navigation }) => {
                         ]
                     }
                 ]}
-                onRegionChangeComplete={region => handleRegionChange(region)}
+                onRegionChangeComplete={region => setMapRegion(region)}
             >
-                <Marker coordinate={{ latitude: -34.587435, longitude: -58.400338 }} onPress={() => setVisibleModal(true)}>
-                    <Image
-                        source={require('../assets/marker.png')}
-                        style={{ width: 26, height: 28 }}
-                        resizeMode="center"
-                    />
-                </Marker>
-                <Marker coordinate={{ latitude: -34.590492573717675, longitude: -58.39541041866849 }} onPress={() => setVisibleModal(true)} >
-                    <Image
-                        source={require('../assets/marker.png')}
-                        style={{ width: 26, height: 28 }}
-                        resizeMode="center"
-                    />
-                </Marker>
-                <Marker coordinate={{ latitude: -34.58789583523734, longitude: -58.401826262111015 }} onPress={() => setVisibleModal(true)}>
-                    <Image
-                        source={require('../assets/marker.png')}
-                        style={{ width: 26, height: 28 }}
-                        resizeMode="center"
-                    />
-                </Marker>
+                {state.parkings && state.parkings.map((location, index) => {
+                    return (
+                        <Marker
+                            key={index}
+                            parkingId={location.id}
+                            coordinate={{ latitude: location.lat, longitude: location.lng }}
+                            onPress={(e) => getParkingInfo(e._dispatchInstances.memoizedProps.parkingId)}>
+                            <Image
+                                source={require('../assets/marker.png')}
+                                style={{ width: 26, height: 28 }}
+                                resizeMode="center"
+                            />
+                        </Marker>)
+                })}
                 <Modal
                     visible={visibleModal}
                     backdropStyle={styles.calloutBackdrop}
@@ -180,14 +205,14 @@ const Home = ({ navigation }) => {
                 >
                     <Card style={styles.card} header={cardHeader} footer={cardFooter}>
                         <Text>
-                            Se va en aproximadamente 10 minutos
+                            Se va en aproximadamente {modalInfo.expiryTime} minutos
                         </Text>
                     </Card>
                 </Modal>
             </MapView>
-            <TopNavigation accessoryLeft={menuAction} style={styles.header} />
+            <TopMenu showMenu={() => navigation.toggleDrawer()} />
             <Button style={styles.locationButton} appearance='filled' status='primary' accessoryLeft={renderLocationIcon} onPress={() => handleLocationButtonPress()} />
-            <Button style={styles.addButton} appearance='filled' status='primary' accessoryLeft={renderAddIcon} />
+            <Button style={styles.addButton} appearance='filled' status='primary' accessoryLeft={renderAddIcon} onPress={() => navigation.navigate("AddParking")} />
             <SnackBar
                 visible={message.length > 0}
                 textMessage={message}
@@ -257,6 +282,9 @@ const styles = StyleSheet.create({
     },
     cardFooterControl: {
         marginHorizontal: 2,
+        flex: 1,
+        flexDirection: 'row',
+        justifyContent: 'space-around'
     },
 });
 

@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from "react"
+import React, { useContext, useState } from "react"
 import auth from '@react-native-firebase/auth';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
@@ -15,8 +15,6 @@ GoogleSignin.configure({
 });
 
 export function AuthProvider({ children }) {
-
-
 
     const [currentUser, setCurrentUser] = useState()
 
