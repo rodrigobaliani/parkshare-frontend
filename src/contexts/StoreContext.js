@@ -2,7 +2,7 @@ import React, { createContext, useContext, useReducer } from 'react';
 import firestore from '@react-native-firebase/firestore';
 
 const StoreContext = createContext();
-const initialState = { parkings: [], currentParking: {} };
+const initialState = { parkings: [], currentParking: {}, hostInitialData: {} };
 
 const reducer = (state, action) => {
     switch (action.type) {
@@ -11,14 +11,26 @@ const reducer = (state, action) => {
                 parkings: [...state.parkings, action.payload],
                 currentParking: state.currentParking
             }
-        case "getParkings":
+        case "deleteParking":
             return {
+                parkings: state.parkings.filter(p => p.id != action.payload),
+                currentParking: state.currentParking
+            }
+        case "setCurrentParking":
+            return {
+                currentParking: action.payload,
                 parkings: state.parkings
             }
         case "setCurrentParking":
             return {
                 currentParking: action.payload,
                 parkings: state.parkings
+            }
+        case "setHostInitialData":
+            return {
+                currentParking: state.currentParking,
+                parkings: state.parkings,
+                hostInitialData: action.payload
             }
         default:
             throw new Error(`Unhandled action type: ${action.type}`);

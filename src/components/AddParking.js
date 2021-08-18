@@ -1,11 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react'
-import { StyleSheet, PermissionsAndroid, Image, View, ScrollView, FlatList } from 'react-native'
+import React, { useState, useEffect } from 'react'
+import { StyleSheet, PermissionsAndroid, View, ScrollView } from 'react-native'
 import { useAuth } from '../contexts/AuthContext';
-import { Icon, TopNavigation, TopNavigationAction, Button, Modal, Text, Card, useTheme, Select, SelectItem, IndexPath, Input } from '@ui-kitten/components';
+import { Icon, Button, useTheme, Select, SelectItem, IndexPath, Input } from '@ui-kitten/components';
 import MapView, { PROVIDER_GOOGLE, Marker } from 'react-native-maps'
-import SnackBar from 'react-native-snackbar-component'
 import Geolocation from '@react-native-community/geolocation';
-import { ScrollView as GestureHandlerScrollView } from 'react-native-gesture-handler'
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import { LogBox } from 'react-native';
 import { useStore } from '../contexts/StoreContext';
@@ -85,25 +83,32 @@ const AddParking = ({ navigation }) => {
     };
 
     const handleAddParking = () => {
+        const now = new Date()
+        const expiryDate = new Date(now.getTime() + timeOptions[parkingTime.row].time * 60000);
         const parking = {
             lat: mapRegion.latitude,
             lng: mapRegion.longitude,
-            creationDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
-            expiryDate: moment(new Date()).add(timeOptions[parkingTime.row].time, 'm').format('YYYY-MM-DD HH:mm:ss'),
+            creationDate: firestore.FieldValue.serverTimestamp(),
+            expiryDate: firestore.Timestamp.fromDate(expiryDate),
             hostUser: currentUser.uid,
             carBrand: "Volkswagen",
             carModel: "Vento",
             carPlate: "PIH-372",
-            candidateUser: ''
+            candidateUser: '',
+            status: '0'
         }
         firestore()
             .collection('parkings')
             .add(parking)
-            .then(() => {
+            .then((docRef) => {
                 console.log("Parking added: " + JSON.stringify(parking));
-                dispatch({ type: "addParking", payload: parking })
+                const stateParking = {
+                    id: docRef.id,
+                    ...parking
+                }
+                dispatch({ type: "addParking", payload: stateParking })
+                navigation.navigate("HostWaiting", { parkingId: docRef.id })
             });
-        navigation.navigate("Home")
     }
 
     return (

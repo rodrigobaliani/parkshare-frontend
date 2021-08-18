@@ -5,6 +5,9 @@ import Home from '../components/Home';
 import { useAuth } from '../contexts/AuthContext';
 import AddParking from '../components/AddParking';
 import RouteParking from '../components/RouteParking';
+import HostWaiting from '../components/HostWaiting';
+import CandidateGoing from '../components/CandidateGoing';
+import HostGoing from '../components/HostGoing';
 
 const { Navigator, Screen } = createDrawerNavigator();
 
@@ -43,6 +46,9 @@ export default function AppDrawer() {
             <Screen name='Home' component={Home} />
             <Screen name='AddParking' component={AddParking} />
             <Screen name='RouteParking' component={RouteParking} />
+            <Screen name='HostWaiting' component={HostWaiting} />
+            <Screen name='CandidateGoing' component={CandidateGoing} />
+            <Screen name='HostGoing' component={HostGoing} />
         </Navigator>
     );
 }

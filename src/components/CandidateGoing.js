@@ -14,60 +14,81 @@ import moment from 'moment'
 import MapViewDirections from 'react-native-maps-directions';
 import TopMenu from './TopMenu';
 
-const RouteParking = ({ navigation }) => {
+const CandidateGoing = ({ navigation, route }) => {
 
-    const initialLocation = {
-        latitude: -34.587435,
-        longitude: -58.400338,
-        latitudeDelta: 0.015,
-        longitudeDelta: 0.0121,
-    }
+    const [currentLatitude, setCurrentLatitude] = useState(0);
+    const [currentLongitude, setCurrentLongitude] = useState(0);
+    const [currentTimestamp, setCurrentTimestamp] = useState(0);
+    const [currentDistance, setCurrentDistance] = useState('');
+    const [currentDuration, setCurrentDuration] = useState('');
+    const [nearDestination, setNearDestination] = useState(false);
 
     const theme = useTheme();
     const mapRef = useRef();
     const { width, height } = Dimensions.get('window');
     const { state, dispatch } = useStore();
     const { currentUser } = useAuth();
+    const { parkingId } = route.params
 
-    const handleCancelButtonClick = () => {
-        const cleanParking = {
-            hostLat: initialLocation.latitude,
-            hostLng: initialLocation.longitude,
-            candidateLat: initialLocation.latitude,
-            candidateLng: initialLocation.longitude,
-            latDelta: initialLocation.latitudeDelta,
-            lngDelta: initialLocation.longitudeDelta,
-            distance: 0,
-            duration: 0,
-        }
-        dispatch({ type: "setCurrentParking", payload: cleanParking })
-        navigation.navigate("Home")
-    }
+    useEffect(() => {
+        const watchId = Geolocation.watchPosition(
+            async (position) => {
+                setCurrentLongitude(position.coords.longitude);
+                setCurrentLatitude(position.coords.latitude);
+                setCurrentTimestamp(position.timestamp);
+                const urlToFetchDistance = 'https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins=' + position.coords.latitude + ',' + position.coords.longitude
+                    + '&destinations=' + state.currentParking.hostLat + '%2C' + state.currentParking.hostLng
+                    + '&key=' + "AIzaSyBdTNWWsw0iktleWC1qKn3uVMmW-CfGqzQ";
+                try {
+                    let res = await fetch(urlToFetchDistance)
+                    res = await res.json();
+                    const distanceMeters = res.rows[0].elements[0].distance.value
+                    const distanceText = res.rows[0].elements[0].distance.text
+                    const durationText = res.rows[0].elements[0].duration.text
+                    setCurrentDistance(distanceText)
+                    setCurrentDuration(durationText)
+                    const candidateTripInfo = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude,
+                        latDelta: state.currentParking.latDelta,
+                        lngDelta: state.currentParking.lngDelta,
+                        distance: distanceText,
+                        duration: durationText,
+                        timestamp: position.timestamp
+                    }
+                    console.log(distanceMeters)
+                    if (distanceMeters <= 400) {
+                        setNearDestination(true)
+                        await firestore()
+                            .collection('parkings')
+                            .doc(parkingId)
+                            .update({
+                                candidateTripInfo: candidateTripInfo,
+                                status: '3'
+                            })
 
-    const handleConfirmButtonClick = async () => {
-        try {
-            const candidateTripInfo = {
-                lat: state.currentParking.candidateLat,
-                lng: state.currentParking.candidateLng,
-                latDelta: state.currentParking.latDelta,
-                lngDelta: state.currentParking.lngDelta,
-                distance: state.currentParking.distance,
-                duration: state.currentParking.duration
-            }
-            await firestore()
-                .collection('parkings')
-                .doc(state.currentParking.parkingId)
-                .update({
-                    candidateUser: currentUser.uid,
-                    status: '1',
-                    candidateTripInfo: candidateTripInfo
-                })
-            navigation.navigate("CandidateGoing", { parkingId: state.currentParking.parkingId })
-        }
-        catch (error) {
-            console.log(error)
-        }
-    }
+                    }
+                    else {
+                        await firestore()
+                            .collection('parkings')
+                            .doc(parkingId)
+                            .update({
+                                candidateTripInfo: candidateTripInfo,
+                                status: '2'
+
+                            })
+                    }
+                }
+                catch (error) {
+                    console.log(error)
+                }
+            },
+            error => alert(error.message),
+            { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000, distanceFilter: 100 }
+        );
+
+        return () => Geolocation.clearWatch(watchId);
+    }, []);
 
     return (
         <React.Fragment>
@@ -78,8 +99,8 @@ const RouteParking = ({ navigation }) => {
                         style={styles.map}
                         showsMyLocationButton={true}
                         region={{
-                            latitude: state.currentParking.candidateLat,
-                            longitude: state.currentParking.candidateLng,
+                            latitude: currentLatitude,
+                            longitude: currentLongitude,
                             latitudeDelta: state.currentParking.latDelta,
                             longitudeDelta: state.currentParking.lngDelta,
                         }}
@@ -117,24 +138,13 @@ const RouteParking = ({ navigation }) => {
                             apikey="AIzaSyBdTNWWsw0iktleWC1qKn3uVMmW-CfGqzQ"
                             strokeWidth={4}
                             strokeColor="#111111"
-                            onReady={result => {
-                                mapRef.current.fitToCoordinates(result.coordinates, {
-                                    edgePadding: {
-                                        right: (width / 20),
-                                        bottom: (height / 20),
-                                        left: (width / 20),
-                                        top: (height / 20),
-                                    }
-                                })
-
-                            }}
                         />
                         <Marker coordinate={{
-                            latitude: state.currentParking.candidateLat,
-                            longitude: state.currentParking.candidateLng
+                            latitude: currentLatitude,
+                            longitude: currentLongitude
                         }}>
                             <Image
-                                source={require('../assets/marker.png')}
+                                source={require('../assets/car.png')}
                                 style={{ width: 26, height: 28 }}
                                 resizeMode="center"
                             />
@@ -153,12 +163,18 @@ const RouteParking = ({ navigation }) => {
 
                     <View style={[styles.container, { backgroundColor: theme['background-basic-color-1'] }]}>
                         <View style={styles.textContainer}>
-                            <Text style={styles.textInfo} category='h5' status='info'>Llegás en {state.currentParking.duration}</Text>
-                            <Text style={styles.textInfo} category='h6'>Distancia: {state.currentParking.distance}</Text>
+                            {!nearDestination ?
+                                <Text style={styles.textInfo} category='h4' status='info'>Estás en camino</Text>
+                                :
+                                <Text style={styles.textInfo} category='h4' status='info'>Llegando a destino</Text>
+                            }
+                            <Text style={styles.textInfo} category='h5' status='info'>Llegás en {currentDuration}</Text>
+                            <Text style={styles.textInfo} category='h5'>Distancia: {currentDistance}</Text>
+                            <Text style={styles.textInfo} category='h6'>Auto Host: Volkswagen Vento - PIH 372</Text>
                         </View>
                         <View style={styles.buttonContainer}>
-                            <Button size='small' onPress={handleCancelButtonClick}>CANCELAR</Button>
-                            <Button size='small' onPress={handleConfirmButtonClick}>CONFIRMAR</Button>
+                            <Button size='small'>CANCELAR</Button>
+                            {nearDestination ? <Button size='small'>FINALIZAR</Button> : <></>}
                         </View>
                     </View>
                 </React.Fragment>
@@ -170,12 +186,12 @@ const RouteParking = ({ navigation }) => {
 const styles = StyleSheet.create({
     map: {
         ...StyleSheet.absoluteFillObject,
-        height: '80%'
+        height: '70%'
     },
     container: {
-        top: "80%",
+        top: "70%",
         flex: 1,
-        height: "20%",
+        height: "30%",
     },
     textContainer: {
         marginVertical: 10,
@@ -186,9 +202,10 @@ const styles = StyleSheet.create({
     },
     buttonContainer: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
+        justifyContent: 'space-evenly',
         marginHorizontal: 30,
+        marginVertical: 10
     }
 })
 
-export default RouteParking
+export default CandidateGoing

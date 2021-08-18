@@ -1,18 +1,14 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect } from 'react'
 import { StyleSheet, PermissionsAndroid, Image, View } from 'react-native'
 import { useAuth } from '../contexts/AuthContext';
-import { Icon, Button, Modal, Text, Card } from '@ui-kitten/components';
+import { Icon, Button, Modal, Text, Card, Spinner } from '@ui-kitten/components';
 import MapView, { PROVIDER_GOOGLE, Marker } from 'react-native-maps'
 import SnackBar from 'react-native-snackbar-component'
 import Geolocation from '@react-native-community/geolocation';
 import TopMenu from './TopMenu';
 import { useStore } from '../contexts/StoreContext';
-import AddParking from './AddParking';
 import firestore from '@react-native-firebase/firestore';
 import moment from 'moment'
-
-
-
 
 const Home = ({ navigation }) => {
 
@@ -58,33 +54,50 @@ const Home = ({ navigation }) => {
             <Button
                 style={styles.cardFooterControl}
                 size='small'
-                onPress={() => {
-                    setVisibleModal(false)
-                    Geolocation.getCurrentPosition((pos) => {
-                        const crd = pos.coords;
-                        const parking = state.parkings.filter((doc) => doc.id === modalInfo.parkingId)
-                        console.log(parking)
-                        const currentParking = {
-                            hostLat: parking[0].lat,
-                            hostLng: parking[0].lng,
-                            candidateLat: crd.latitude,
-                            candidateLng: crd.longitude,
-                            latDelta: mapRegion.latitudeDelta,
-                            lngDelta: mapRegion.longitudeDelta
-                        }
-                        console.log(currentParking)
-                        dispatch({ type: "setCurrentParking", payload: currentParking })
-                        navigation.navigate("RouteParking")
-                    }, error => alert(JSON.stringify(error)),
-                        { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 },
-                    );
-
-                }}
+                onPress={handleBookingButtonPress}
             >
                 RESERVAR
             </Button>
         </View>
     );
+
+    const handleBookingButtonPress = async () => {
+        setVisibleModal(false)
+        Geolocation.getCurrentPosition(async (pos) => {
+            const crd = pos.coords;
+            const parking = state.parkings.filter((doc) => doc.id === modalInfo.parkingId)
+            await setConfirmParkingData(parking[0].lat, parking[0].lng, crd.latitude, crd.longitude)
+            navigation.navigate("RouteParking")
+
+        }, error => alert(JSON.stringify(error)),
+            { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 },
+        );
+    }
+
+    const setConfirmParkingData = async (lat1, lng1, lat2, lng2) => { // Pass Latitude & Longitude of both points as a parameter
+        const urlToFetchDistance = 'https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins=' + lat1 + ',' + lng1
+            + '&destinations=' + lat2 + '%2C' + lng2
+            + '&key=' + "AIzaSyBdTNWWsw0iktleWC1qKn3uVMmW-CfGqzQ";
+        try {
+            let res = await fetch(urlToFetchDistance)
+            res = await res.json();
+            const currentParking = {
+                hostLat: lat1,
+                hostLng: lng1,
+                candidateLat: lat2,
+                candidateLng: lng2,
+                latDelta: mapRegion.latitudeDelta,
+                lngDelta: mapRegion.longitudeDelta,
+                distance: res.rows[0].elements[0].distance.text,
+                duration: res.rows[0].elements[0].duration.text,
+                parkingId: modalInfo.parkingId
+            }
+            dispatch({ type: "setCurrentParking", payload: currentParking })
+        }
+        catch (error) {
+            console.log(error)
+        }
+    }
 
     const requestLocationPermission = async () => {
 
@@ -109,7 +122,10 @@ const Home = ({ navigation }) => {
     useEffect(() => {
         firestore()
             .collection('parkings')
-            .get().then((querySnapshot) => {
+            .where('expiryDate', '>=', firestore.Timestamp.now())
+            .where('status', '==', '0')
+            .get()
+            .then((querySnapshot) => {
                 querySnapshot.forEach((doc) => {
                     const parking = {
                         id: doc.id,
@@ -144,7 +160,11 @@ const Home = ({ navigation }) => {
 
     const getParkingInfo = (parkingId) => {
         const parking = state.parkings.filter((doc) => doc.id === parkingId)
-        const expiryTime = moment(parking[0].expiryDate).minutes() - moment().minutes()
+        const now = moment(firestore.Timestamp.now().toDate()); //todays date
+        const end = moment(parking[0].expiryDate.toDate()); // another date
+        const duration = moment.duration(end.diff(now));
+        const minutes = duration.asMinutes();
+        const expiryTime = Math.round(minutes)
         setModalInfo({
             carBrand: parking[0].carBrand,
             carModel: parking[0].carModel,
@@ -186,17 +206,21 @@ const Home = ({ navigation }) => {
             >
                 {state.parkings && state.parkings.map((location, index) => {
                     return (
-                        <Marker
-                            key={index}
-                            parkingId={location.id}
-                            coordinate={{ latitude: location.lat, longitude: location.lng }}
-                            onPress={(e) => getParkingInfo(e._dispatchInstances.memoizedProps.parkingId)}>
-                            <Image
-                                source={require('../assets/marker.png')}
-                                style={{ width: 26, height: 28 }}
-                                resizeMode="center"
-                            />
-                        </Marker>)
+                        <React.Fragment key={index}>
+                            {location.hostUser != currentUser.uid &&
+                                <Marker
+                                    key={index}
+                                    parkingId={location.id}
+                                    coordinate={{ latitude: location.lat, longitude: location.lng }}
+                                    onPress={(e) => getParkingInfo(e._dispatchInstances.memoizedProps.parkingId)}>
+                                    <Image
+                                        source={require('../assets/marker.png')}
+                                        style={{ width: 26, height: 28 }}
+                                        resizeMode="center"
+                                    />
+                                </Marker>
+                            }
+                        </React.Fragment>)
                 })}
                 <Modal
                     visible={visibleModal}
