@@ -9,22 +9,20 @@ const reducer = (state, action) => {
         case "addParking":
             return {
                 parkings: [...state.parkings, action.payload],
-                currentParking: state.currentParking
+                currentParking: state.currentParking,
+                hostInitialData: state.hostInitialData
             }
         case "deleteParking":
             return {
                 parkings: state.parkings.filter(p => p.id != action.payload),
-                currentParking: state.currentParking
+                currentParking: state.currentParking,
+                hostInitialData: state.hostInitialData
             }
         case "setCurrentParking":
             return {
                 currentParking: action.payload,
-                parkings: state.parkings
-            }
-        case "setCurrentParking":
-            return {
-                currentParking: action.payload,
-                parkings: state.parkings
+                parkings: state.parkings,
+                hostInitialData: state.hostInitialData
             }
         case "setHostInitialData":
             return {

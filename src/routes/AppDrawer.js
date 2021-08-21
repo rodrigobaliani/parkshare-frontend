@@ -8,6 +8,8 @@ import RouteParking from '../components/RouteParking';
 import HostWaiting from '../components/HostWaiting';
 import CandidateGoing from '../components/CandidateGoing';
 import HostGoing from '../components/HostGoing';
+import HostRate from '../components/HostRate';
+import CandidateRate from '../components/CandidateRate';
 
 const { Navigator, Screen } = createDrawerNavigator();
 
@@ -49,6 +51,8 @@ export default function AppDrawer() {
             <Screen name='HostWaiting' component={HostWaiting} />
             <Screen name='CandidateGoing' component={CandidateGoing} />
             <Screen name='HostGoing' component={HostGoing} />
+            <Screen name='HostRate' component={HostRate} />
+            <Screen name='CandidateRate' component={CandidateRate} />
         </Navigator>
     );
 }

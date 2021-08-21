@@ -48,9 +48,10 @@ const HostGoing = ({ navigation, route }) => {
         if (status === '3') {
             setNearDestination(true)
         }
-        /*else {
-            setNearDestination(false)
-        }*/
+        if (status === '4') {
+            dispatch({ type: "deleteParking", payload: parkingId })
+            navigation.navigate('HostRate', { mode: '1', parkingId: parkingId })
+        }
     })
 
     useEffect(() => {
@@ -60,6 +61,22 @@ const HostGoing = ({ navigation, route }) => {
             .onSnapshot(onSnapshot)
         return subscriber
     }, []);
+
+    const handleEndButtonClick = async () => {
+        try {
+            await firestore()
+                .collection('parkings')
+                .doc(parkingId)
+                .update({
+                    status: '5'
+                })
+            dispatch({ type: "deleteParking", payload: parkingId })
+            navigation.navigate('HostRate', { mode: '2', parkingId: parkingId })
+        }
+        catch (error) {
+            console.log(error)
+        }
+    }
 
     return (
         <React.Fragment>
@@ -145,7 +162,7 @@ const HostGoing = ({ navigation, route }) => {
                     </View>
                     <View style={styles.buttonContainer}>
                         <Button size='small'>CANCELAR</Button>
-                        {nearDestination ? <Button size='small'>FINALIZAR</Button> : <></>}
+                        {nearDestination ? <Button size='small' onPress={handleEndButtonClick}>FINALIZAR</Button> : <></>}
                     </View>
                 </View>
             </React.Fragment>

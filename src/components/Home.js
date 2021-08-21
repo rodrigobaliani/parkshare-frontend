@@ -66,7 +66,7 @@ const Home = ({ navigation }) => {
         Geolocation.getCurrentPosition(async (pos) => {
             const crd = pos.coords;
             const parking = state.parkings.filter((doc) => doc.id === modalInfo.parkingId)
-            await setConfirmParkingData(parking[0].lat, parking[0].lng, crd.latitude, crd.longitude)
+            await setConfirmParkingData(crd.latitude, crd.longitude, parking[0].lat, parking[0].lng)
             navigation.navigate("RouteParking")
 
         }, error => alert(JSON.stringify(error)),
@@ -82,10 +82,10 @@ const Home = ({ navigation }) => {
             let res = await fetch(urlToFetchDistance)
             res = await res.json();
             const currentParking = {
-                hostLat: lat1,
-                hostLng: lng1,
-                candidateLat: lat2,
-                candidateLng: lng2,
+                hostLat: lat2,
+                hostLng: lng2,
+                candidateLat: lat1,
+                candidateLng: lng1,
                 latDelta: mapRegion.latitudeDelta,
                 lngDelta: mapRegion.longitudeDelta,
                 distance: res.rows[0].elements[0].distance.text,
@@ -136,6 +136,7 @@ const Home = ({ navigation }) => {
             })
         const welcomeMessage = `¡Bienvenido ${currentUser.email} !`
         setMessage(welcomeMessage);
+
     }, []);
 
 

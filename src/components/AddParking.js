@@ -36,7 +36,7 @@ const AddParking = ({ navigation }) => {
     const [parkingTime, setParkingTime] = useState(new IndexPath(0));
 
     useEffect(() => {
-        LogBox.ignoreLogs(['VirtualizedLists should never be nested']);
+        //LogBox.ignoreLogs(['VirtualizedLists should never be nested']);
     }, [])
 
     const renderLocationIcon = (props) => (

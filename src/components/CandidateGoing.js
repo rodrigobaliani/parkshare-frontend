@@ -39,9 +39,11 @@ const CandidateGoing = ({ navigation, route }) => {
                 const urlToFetchDistance = 'https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins=' + position.coords.latitude + ',' + position.coords.longitude
                     + '&destinations=' + state.currentParking.hostLat + '%2C' + state.currentParking.hostLng
                     + '&key=' + "AIzaSyBdTNWWsw0iktleWC1qKn3uVMmW-CfGqzQ";
+                console.log(urlToFetchDistance)
                 try {
                     let res = await fetch(urlToFetchDistance)
                     res = await res.json();
+                    console.log(res.rows[0].elements[0])
                     const distanceMeters = res.rows[0].elements[0].distance.value
                     const distanceText = res.rows[0].elements[0].distance.text
                     const durationText = res.rows[0].elements[0].duration.text
@@ -56,9 +58,8 @@ const CandidateGoing = ({ navigation, route }) => {
                         duration: durationText,
                         timestamp: position.timestamp
                     }
-                    console.log(distanceMeters)
-                    if (distanceMeters <= 400) {
-                        setNearDestination(true)
+                    if (distanceMeters <= 400 && distanceMeters >= 100) {
+                        if (!nearDestination) setNearDestination(true)
                         await firestore()
                             .collection('parkings')
                             .doc(parkingId)
@@ -66,6 +67,27 @@ const CandidateGoing = ({ navigation, route }) => {
                                 candidateTripInfo: candidateTripInfo,
                                 status: '3'
                             })
+
+                    }
+                    else if (distanceMeters < 100) {
+                        await firestore()
+                            .collection('parkings')
+                            .doc(parkingId)
+                            .onSnapshot((documentSnapshot => {
+                                if (documentSnapshot.data().status === '5') {
+                                    dispatch({ type: "deleteParking", payload: parkingId })
+                                    navigation.navigate('CandidateRate', { mode: '1', parkingId: parkingId })
+                                }
+                                else {
+                                    firestore()
+                                        .collection('parkings')
+                                        .doc(parkingId)
+                                        .update({
+                                            candidateTripInfo: candidateTripInfo,
+                                        })
+                                }
+
+                            }))
 
                     }
                     else {
@@ -89,6 +111,22 @@ const CandidateGoing = ({ navigation, route }) => {
 
         return () => Geolocation.clearWatch(watchId);
     }, []);
+
+    const handleEndButtonClick = async () => {
+        try {
+            await firestore()
+                .collection('parkings')
+                .doc(parkingId)
+                .update({
+                    status: '4'
+                })
+            dispatch({ type: "deleteParking", payload: parkingId })
+            navigation.navigate('CandidateRate', { mode: '2', parkingId: parkingId })
+        }
+        catch (error) {
+            console.log(error)
+        }
+    }
 
     return (
         <React.Fragment>
@@ -170,11 +208,11 @@ const CandidateGoing = ({ navigation, route }) => {
                             }
                             <Text style={styles.textInfo} category='h5' status='info'>Llegás en {currentDuration}</Text>
                             <Text style={styles.textInfo} category='h5'>Distancia: {currentDistance}</Text>
-                            <Text style={styles.textInfo} category='h6'>Auto Host: Volkswagen Vento - PIH 372</Text>
+                            <Text style={styles.textInfo} category='h6'>Auto Anfitrión:: Volkswagen Vento - PIH 372</Text>
                         </View>
                         <View style={styles.buttonContainer}>
                             <Button size='small'>CANCELAR</Button>
-                            {nearDestination ? <Button size='small'>FINALIZAR</Button> : <></>}
+                            {nearDestination ? <Button size='small' onPress={handleEndButtonClick}>FINALIZAR</Button> : <></>}
                         </View>
                     </View>
                 </React.Fragment>
