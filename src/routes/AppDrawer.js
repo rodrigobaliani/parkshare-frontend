@@ -37,7 +37,7 @@ export default function AppDrawer() {
     const DrawerContent = ({ navigation, state }) => (
         <Drawer
             selectedIndex={new IndexPath(state.index)}
-            onSelect={index => state.routeNames[index.row] ? navigation.navigate(state.routeNames[index.row]) : null}>
+            onSelect={index => index.row < 1 ? navigation.navigate(state.routeNames[index.row]) : null}>
             <DrawerItem title='Home' accessoryLeft={renderHomeIcon} />
             <DrawerItem title='Cerrar Sesión' accessoryLeft={renderSignOutIcon} onPress={() => signOutUser()} />
         </Drawer>

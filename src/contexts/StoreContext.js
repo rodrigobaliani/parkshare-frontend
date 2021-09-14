@@ -14,7 +14,7 @@ const reducer = (state, action) => {
             }
         case "deleteParking":
             return {
-                parkings: state.parkings.filter(p => p.id != action.payload),
+                parkings: state.parkings.filter(p => p.id != action.payload.id),
                 currentParking: state.currentParking,
                 hostInitialData: state.hostInitialData
             }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { StyleSheet, PermissionsAndroid, Image, View } from 'react-native'
 import { useAuth } from '../contexts/AuthContext';
 import { Icon, Button, Modal, Text, Card, Spinner } from '@ui-kitten/components';
@@ -13,8 +13,8 @@ import moment from 'moment'
 const Home = ({ navigation }) => {
 
     const initialLocation = {
-        latitude: -34.587435,
-        longitude: -58.400338,
+        latitude: 0,
+        longitude: 0,
         latitudeDelta: 0.015,
         longitudeDelta: 0.0121,
     }
@@ -26,6 +26,7 @@ const Home = ({ navigation }) => {
     const [modalInfo, setModalInfo] = useState({ carBrand: '', carModel: '', carPlate: '', expiryTime: '', parkingId: '' })
     const [visibleModal, setVisibleModal] = useState(false)
     const { state, dispatch } = useStore();
+    const mapRef = useRef();
 
     const renderLocationIcon = (props) => (
         <Icon {...props} name='navigation-2-outline' size='giant' />
@@ -119,25 +120,35 @@ const Home = ({ navigation }) => {
 
     };
 
-    useEffect(() => {
-        firestore()
-            .collection('parkings')
-            .where('expiryDate', '>=', firestore.Timestamp.now())
-            .where('status', '==', '0')
-            .get()
-            .then((querySnapshot) => {
-                querySnapshot.forEach((doc) => {
-                    const parking = {
-                        id: doc.id,
-                        ...doc.data()
-                    }
-                    dispatch({ type: "addParking", payload: parking })
-                });
-            })
+    useEffect(async () => {
+        await handleLocationButtonPress();
+        const unsubscribe =
+            firestore()
+                .collection('parkings')
+                .where('expiryDate', '>=', firestore.Timestamp.now())
+                .where('status', '==', '0')
+                .onSnapshot((querySnapshot) => {
+                    querySnapshot.docChanges().forEach((change) => {
+                        if (change.type === "added") {
+                            const parking = {
+                                id: change.doc.id,
+                                ...change.doc.data()
+                            }
+                            dispatch({ type: "addParking", payload: parking })
+                        }
+                        if (change.type === "removed") {
+                            const parking = {
+                                id: change.doc.id,
+                                ...change.doc.data()
+                            }
+                            dispatch({ type: "deleteParking", payload: parking })
+                        }
+                    });
+                })
         const welcomeMessage = `¡Bienvenido ${currentUser.email} !`
         setMessage(welcomeMessage);
-
-    }, []);
+        return () => unsubscribe();
+    }, [currentUser]);
 
 
     const handleLocationButtonPress = async () => {
@@ -154,6 +165,7 @@ const Home = ({ navigation }) => {
                 longitudeDelta: mapRegion.longitudeDelta
             }
             setMapRegion(newRegion)
+            mapRef.current.animateToRegion(newRegion)
         }, error => alert(JSON.stringify(error)),
             { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 },
         );
@@ -182,8 +194,9 @@ const Home = ({ navigation }) => {
                 provider={PROVIDER_GOOGLE}
                 style={styles.map}
                 showsMyLocationButton={true}
-                region={mapRegion}
+                initialRegion={initialLocation}
                 showsPointsOfInterest={false}
+                showsUserLocation={true}
                 customMapStyle={[
                     {
                         "featureType": "poi.business",
@@ -204,6 +217,7 @@ const Home = ({ navigation }) => {
                     }
                 ]}
                 onRegionChangeComplete={region => setMapRegion(region)}
+                ref={mapRef}
             >
                 {state.parkings && state.parkings.map((location, index) => {
                     return (

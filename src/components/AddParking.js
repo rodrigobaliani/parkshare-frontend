@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { StyleSheet, PermissionsAndroid, View, ScrollView } from 'react-native'
 import { useAuth } from '../contexts/AuthContext';
 import { Icon, Button, useTheme, Select, SelectItem, IndexPath, Input } from '@ui-kitten/components';
@@ -14,11 +14,9 @@ import moment from 'moment'
 
 const AddParking = ({ navigation }) => {
 
-
-    LogBox.ignoreLogs(['VirtualizedLists should never be nested inside plain ScrollViews with the same orientation - use another VirtualizedList-backed container instead.']);
     const initialLocation = {
-        latitude: -34.587435,
-        longitude: -58.400338,
+        latitude: 0,
+        longitude: 0,
         latitudeDelta: 0.015,
         longitudeDelta: 0.0121,
     }
@@ -34,9 +32,10 @@ const AddParking = ({ navigation }) => {
     const { currentUser } = useAuth();
     const [mapRegion, setMapRegion] = useState(initialLocation);
     const [parkingTime, setParkingTime] = useState(new IndexPath(0));
+    const mapRef = useRef();
 
-    useEffect(() => {
-        //LogBox.ignoreLogs(['VirtualizedLists should never be nested']);
+    useEffect(async () => {
+        await handleLocationButtonPress();
     }, [])
 
     const renderLocationIcon = (props) => (
@@ -57,6 +56,7 @@ const AddParking = ({ navigation }) => {
                 longitudeDelta: mapRegion.longitudeDelta
             }
             setMapRegion(newRegion)
+            mapRef.current.animateToRegion(newRegion)
         }, error => alert(JSON.stringify(error)),
             { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 },
         );
@@ -117,7 +117,7 @@ const AddParking = ({ navigation }) => {
                 provider={PROVIDER_GOOGLE}
                 style={styles.map}
                 showsMyLocationButton={true}
-                region={mapRegion}
+                initialRegion={mapRegion}
                 showsPointsOfInterest={false}
                 customMapStyle={[
                     {
@@ -148,6 +148,7 @@ const AddParking = ({ navigation }) => {
                     console.log(e.nativeEvent);
                 }}
                 onRegionChangeComplete={(region) => setMapRegion(region)}
+                ref={mapRef}
             >
                 <Marker coordinate={{ latitude: mapRegion.latitude, longitude: mapRegion.longitude }} />
             </MapView>

@@ -5,6 +5,7 @@ import AuthStack from './AuthStack';
 import Loading from '../components/layout/Loading';
 import { useAuth } from '../contexts/AuthContext';
 import AppDrawer from './AppDrawer';
+import firestore from '@react-native-firebase/firestore';
 
 export default function Routes() {
     const { currentUser, setCurrentUser } = useAuth();
