@@ -10,11 +10,23 @@ import CandidateGoing from '../components/CandidateGoing';
 import HostGoing from '../components/HostGoing';
 import HostRate from '../components/HostRate';
 import CandidateRate from '../components/CandidateRate';
+import PaymentMethods from '../components/PaymentMethods';
+import AddPaymentMethod from '../components/AddPaymentMethod';
+import Vehicles from '../components/Vehicles';
+import AddVehicle from '../components/AddVehicle';
 
 const { Navigator, Screen } = createDrawerNavigator();
 
 const renderHomeIcon = (props) => (
     <Icon {...props} name='home-outline' />
+);
+
+const renderPaymentIcon = (props) => (
+    <Icon {...props} name='credit-card-outline' />
+);
+
+const renderCarIcon = (props) => (
+    <Icon {...props} name='car-outline' />
 );
 
 const renderSignOutIcon = (props) => (
@@ -37,8 +49,10 @@ export default function AppDrawer() {
     const DrawerContent = ({ navigation, state }) => (
         <Drawer
             selectedIndex={new IndexPath(state.index)}
-            onSelect={index => index.row < 1 ? navigation.navigate(state.routeNames[index.row]) : null}>
+            onSelect={index => index.row < 3 ? navigation.navigate(state.routeNames[index.row]) : null}>
             <DrawerItem title='Home' accessoryLeft={renderHomeIcon} />
+            <DrawerItem title='Metodos de Pago' accessoryLeft={renderPaymentIcon} />
+            <DrawerItem title='Vehículos' accessoryLeft={renderCarIcon} />
             <DrawerItem title='Cerrar Sesión' accessoryLeft={renderSignOutIcon} onPress={() => signOutUser()} />
         </Drawer>
     );
@@ -46,6 +60,10 @@ export default function AppDrawer() {
     return (
         <Navigator drawerContent={props => <DrawerContent {...props} />}>
             <Screen name='Home' component={Home} />
+            <Screen name='PaymentMethods' component={PaymentMethods} />
+            <Screen name='Vehicles' component={Vehicles} />
+            <Screen name='AddPaymentMethod' component={AddPaymentMethod} />
+            <Screen name='AddVehicle' component={AddVehicle} />
             <Screen name='AddParking' component={AddParking} />
             <Screen name='RouteParking' component={RouteParking} />
             <Screen name='HostWaiting' component={HostWaiting} />
