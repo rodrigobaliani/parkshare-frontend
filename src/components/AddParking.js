@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { StyleSheet, PermissionsAndroid, View, ScrollView } from 'react-native'
 import { useAuth } from '../contexts/AuthContext';
-import { Icon, Button, useTheme, Select, SelectItem, IndexPath, Input } from '@ui-kitten/components';
+import { Icon, Button, useTheme, Select, SelectItem, IndexPath, Input, Text } from '@ui-kitten/components';
 import MapView, { PROVIDER_GOOGLE, Marker } from 'react-native-maps'
 import Geolocation from '@react-native-community/geolocation';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
@@ -32,10 +32,24 @@ const AddParking = ({ navigation }) => {
     const { currentUser } = useAuth();
     const [mapRegion, setMapRegion] = useState(initialLocation);
     const [parkingTime, setParkingTime] = useState(new IndexPath(0));
+    const [vehicle, setVehicle] = useState({})
     const mapRef = useRef();
 
     useEffect(async () => {
         await handleLocationButtonPress();
+        try {
+            const defaultVehicle = await firestore()
+                .collection('userData')
+                .doc(`${currentUser.uid}`)
+                .collection('userVehicles')
+                .where('primary', '==', true)
+                .get()
+            dispatch({ type: 'setCurrentVehicle', payload: defaultVehicle.docs[0].data() })
+            console.log(state.currentVehicle)
+        } catch (error) {
+            console.log(error)
+        }
+
     }, [])
 
     const renderLocationIcon = (props) => (
@@ -91,9 +105,7 @@ const AddParking = ({ navigation }) => {
             creationDate: firestore.FieldValue.serverTimestamp(),
             expiryDate: firestore.Timestamp.fromDate(expiryDate),
             hostUser: currentUser.uid,
-            carBrand: "Volkswagen",
-            carModel: "Vento",
-            carPlate: "PIH-372",
+            hostVehicle: state.currentVehicle,
             candidateUser: '',
             status: '0'
         }
@@ -159,8 +171,6 @@ const AddParking = ({ navigation }) => {
                         style={styles.searchBar}
                         placeholder='Search'
                         onPress={(data, details = null) => {
-                            // 'details' is provided when fetchDetails = true
-                            console.log(data)
                             setMapRegion({
                                 ...mapRegion,
                                 latitude: details.geometry.location.lat,
@@ -194,12 +204,22 @@ const AddParking = ({ navigation }) => {
                         <SelectItem title='15 minutos' />
                         <SelectItem title='20 minutos' />
                     </Select>
-                    <Input
-                        style={styles.formElement}
-                        value="$50"
-                        label="Ganancia"
-                        disabled={true}
-                    />
+                    <View style={styles.vehicleContainer}>
+                        <Text style={styles.textElement} category='h6'>
+                            Vehículo: {state.currentVehicle.brand} {state.currentVehicle.model}
+                        </Text>
+                        <Button
+                            style={styles.formElement}
+                            size='small'
+                            appearance='ghost'
+                            onPress={() => navigation.navigate("Vehicles")}
+                        >
+                            CAMBIAR
+                        </Button>
+                    </View>
+                    <Text style={styles.textElement} category='h6'>
+                        Ganancia: $50
+                    </Text>
                     <View style={styles.buttonContainer}>
                         <Button
                             style={styles.formElement}
@@ -232,6 +252,10 @@ const styles = StyleSheet.create({
         flex: 1,
         height: "50%"
     },
+    vehicleContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+    },
     form: {
         flex: 1,
         paddingHorizontal: 4,
@@ -240,6 +264,12 @@ const styles = StyleSheet.create({
     formElement: {
         marginTop: 20,
         marginHorizontal: 10,
+    },
+    textElement: {
+        marginTop: 20,
+        marginHorizontal: 10,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     searchBar: {
         height: "10%"
@@ -251,7 +281,7 @@ const styles = StyleSheet.create({
     },
     locationButton: {
         position: 'absolute',
-        top: 270,
+        top: 200,
         left: 350,
         width: 50,
         height: 50,

@@ -131,6 +131,7 @@ const Vehicles = ({ navigation }) => {
             }
         })
         dispatch({ type: 'setUserVehicles', payload: vehicles })
+        dispatch({ type: 'setCurrentVehicle', payload: vehicles.filter(v => v.id === id)[0] })
     }
 
     const handleDeleteVehicle = async (id) => {

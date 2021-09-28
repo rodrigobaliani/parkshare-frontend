@@ -20,11 +20,7 @@ const HostGoing = ({ navigation, route }) => {
     const [currentLongitude, setCurrentLongitude] = useState(0);
     const [currentLatitudeDelta, setCurrentLatitudeDelta] = useState(0);
     const [currentLongitudeDelta, setCurrentLongitudeDelta] = useState(0);
-    const [routeHostLatitude, setRouteHostLatitude] = useState(0);
-    const [routeHostLongitude, setRouteHostLongitude] = useState(0);
-    const [routeCandidateLatitude, setRouteCandidateLatitude] = useState(0);
-    const [routeCandidateLongitude, setRouteCandidateLongitude] = useState(0);
-    const [currentTimestamp, setCurrentTimestamp] = useState(0);
+    const [candidateVehicle, setCandidateVehicle] = useState({ model: '', brand: '', licensePlate: '' })
     const [currentDistance, setCurrentDistance] = useState('');
     const [currentDuration, setCurrentDuration] = useState('');
     const [nearDestination, setNearDestination] = useState(false);
@@ -45,12 +41,13 @@ const HostGoing = ({ navigation, route }) => {
         setCurrentLatitudeDelta(data.latDelta)
         setCurrentDuration(data.duration)
         setCurrentDistance(data.distance)
+        setCandidateVehicle(documentSnapshot.data().candidateVehicle)
         if (status === '3') {
             setNearDestination(true)
         }
         if (status === '4') {
             dispatch({ type: "deleteParking", payload: parkingId })
-            navigation.navigate('HostRate', { mode: '1', parkingId: parkingId })
+            navigation.navigate('HostRate', { mode: '1', parkingId: parkingId, afterRate: false })
         }
     })
 
@@ -71,7 +68,7 @@ const HostGoing = ({ navigation, route }) => {
                     status: '5'
                 })
             dispatch({ type: "deleteParking", payload: parkingId })
-            navigation.navigate('HostRate', { mode: '2', parkingId: parkingId })
+            navigation.navigate('HostRate', { mode: '2', parkingId: parkingId, afterRate: false })
         }
         catch (error) {
             console.log(error)
@@ -157,7 +154,7 @@ const HostGoing = ({ navigation, route }) => {
                         }
                         <Text style={styles.textInfo} category='h5' status='info'>Llega en {currentDuration}</Text>
                         <Text style={styles.textInfo} category='h5'>Distancia: {currentDistance}</Text>
-                        <Text style={styles.textInfo} category='h6'>Auto: Renault Sandero - OPR 621</Text>
+                        <Text style={styles.textInfo} category='h6'>Candidato: {candidateVehicle.brand} {candidateVehicle.model} - {candidateVehicle.licensePlate}</Text>
 
                     </View>
                     <View style={styles.buttonContainer}>

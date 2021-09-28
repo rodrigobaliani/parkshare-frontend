@@ -23,11 +23,18 @@ const RouteParking = ({ navigation }) => {
         longitudeDelta: 0.0121,
     }
 
+
     const theme = useTheme();
     const mapRef = useRef();
     const { width, height } = Dimensions.get('window');
     const { state, dispatch } = useStore();
     const { currentUser } = useAuth();
+
+    const cardTypes = {
+        visa: 'Visa',
+        master: 'MasterCard',
+        amex: 'American Express'
+    }
 
     const handleCancelButtonClick = () => {
         const cleanParking = {
@@ -60,7 +67,9 @@ const RouteParking = ({ navigation }) => {
                 .update({
                     candidateUser: currentUser.uid,
                     status: '1',
-                    candidateTripInfo: candidateTripInfo
+                    candidateTripInfo: candidateTripInfo,
+                    paymentMethod: state.currentPaymentMethod,
+                    candidateVehicle: state.currentVehicle
                 })
             navigation.navigate("CandidateGoing", { parkingId: state.currentParking.parkingId })
         }
@@ -68,6 +77,31 @@ const RouteParking = ({ navigation }) => {
             console.log(error)
         }
     }
+
+    const handleChangePaymentButtonClick = () => {
+        navigation.navigate("PaymentMethods")
+    }
+    /* useEffect(async () => {
+         try {
+             const defaultPayment = await firestore()
+                 .collection('userData')
+                 .doc(`${currentUser.uid}`)
+                 .collection('paymentMethods')
+                 .where('primary', '==', true)
+                 .get()
+             const defaultVehicle = await firestore()
+                 .collection('userData')
+                 .doc(`${currentUser.uid}`)
+                 .collection('userVehicles')
+                 .where('primary', '==', true)
+                 .get()
+             dispatch({ type: 'setCurrentVehicle', payload: defaultVehicle.docs[0].data() })
+             dispatch({ type: 'setCurrentPaymentMethod', payload: defaultPayment.docs[0].data() })
+         } catch (error) {
+             console.log(error)
+         }
+ 
+     }, [])*/
 
     return (
         <React.Fragment>
@@ -155,6 +189,10 @@ const RouteParking = ({ navigation }) => {
                         <View style={styles.textContainer}>
                             <Text style={styles.textInfo} category='h5' status='info'>Llegás en {state.currentParking.duration}</Text>
                             <Text style={styles.textInfo} category='h6'>Distancia: {state.currentParking.distance}</Text>
+                            <View style={styles.paymentContainer}>
+                                <Text style={styles.textInfo} category='h6'>Pago: {cardTypes[`${state.currentPaymentMethod.type}`]} {state.currentPaymentMethod.number.substring(0, 4)}...</Text>
+                                <Button size='tiny' onPress={handleChangePaymentButtonClick} appearance='ghost'>CAMBIAR</Button>
+                            </View>
                         </View>
                         <View style={styles.buttonContainer}>
                             <Button size='small' onPress={handleCancelButtonClick}>CANCELAR</Button>
@@ -170,12 +208,12 @@ const RouteParking = ({ navigation }) => {
 const styles = StyleSheet.create({
     map: {
         ...StyleSheet.absoluteFillObject,
-        height: '80%'
+        height: '75%'
     },
     container: {
-        top: "80%",
+        top: "75%",
         flex: 1,
-        height: "20%",
+        height: "25%",
     },
     textContainer: {
         marginVertical: 10,
@@ -188,6 +226,10 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         marginHorizontal: 30,
+    },
+    paymentContainer: {
+        flexDirection: 'row',
+        justifyContent: 'center',
     }
 })
 

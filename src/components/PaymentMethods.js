@@ -114,6 +114,8 @@ const PaymentMethods = ({ navigation }) => {
                         .update({
                             primary: card.primary
                         })
+                    console.log(card)
+                    dispatch({ type: 'setCurrentPaymentMethod', payload: card })
                 } catch (error) {
                     console.log(error)
                 }
@@ -137,6 +139,7 @@ const PaymentMethods = ({ navigation }) => {
             }
         })
         dispatch({ type: 'setPaymentMethods', payload: cards })
+        console.log(state)
     }
 
     const handleDeleteCard = async (id) => {
@@ -182,7 +185,6 @@ const PaymentMethods = ({ navigation }) => {
                 }
                 paymentMethods.push(card)
             })
-            //setPaymentCards(paymentMethods);
             dispatch({ type: 'setPaymentMethods', payload: paymentMethods })
         } catch (error) {
             console.log(error)

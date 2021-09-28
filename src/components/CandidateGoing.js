@@ -76,7 +76,7 @@ const CandidateGoing = ({ navigation, route }) => {
                             .onSnapshot((documentSnapshot => {
                                 if (documentSnapshot.data().status === '5') {
                                     dispatch({ type: "deleteParking", payload: parkingId })
-                                    navigation.navigate('CandidateRate', { mode: '1', parkingId: parkingId })
+                                    navigation.navigate('CandidateRate', { mode: '1', parkingId: parkingId, afterRate: false })
                                 }
                                 else {
                                     firestore()
@@ -121,7 +121,7 @@ const CandidateGoing = ({ navigation, route }) => {
                     status: '4'
                 })
             dispatch({ type: "deleteParking", payload: parkingId })
-            navigation.navigate('CandidateRate', { mode: '2', parkingId: parkingId })
+            navigation.navigate('CandidateRate', { mode: '2', parkingId: parkingId, afterRate: false })
         }
         catch (error) {
             console.log(error)
@@ -208,7 +208,7 @@ const CandidateGoing = ({ navigation, route }) => {
                             }
                             <Text style={styles.textInfo} category='h5' status='info'>Llegás en {currentDuration}</Text>
                             <Text style={styles.textInfo} category='h5'>Distancia: {currentDistance}</Text>
-                            <Text style={styles.textInfo} category='h6'>Auto Anfitrión:: Volkswagen Vento - PIH 372</Text>
+                            <Text style={styles.textInfo} category='h6'>Anfitrión: {state.currentParking.hostVehicle.brand} {state.currentParking.hostVehicle.model} - {state.currentParking.hostVehicle.licensePlate}</Text>
                         </View>
                         <View style={styles.buttonContainer}>
                             <Button size='small'>CANCELAR</Button>

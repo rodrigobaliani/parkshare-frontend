@@ -14,6 +14,7 @@ import PaymentMethods from '../components/PaymentMethods';
 import AddPaymentMethod from '../components/AddPaymentMethod';
 import Vehicles from '../components/Vehicles';
 import AddVehicle from '../components/AddVehicle';
+import History from '../components/History';
 
 const { Navigator, Screen } = createDrawerNavigator();
 
@@ -27,6 +28,10 @@ const renderPaymentIcon = (props) => (
 
 const renderCarIcon = (props) => (
     <Icon {...props} name='car-outline' />
+);
+
+const renderHistoryIcon = (props) => (
+    <Icon {...props} name='folder-outline' />
 );
 
 const renderSignOutIcon = (props) => (
@@ -49,10 +54,11 @@ export default function AppDrawer() {
     const DrawerContent = ({ navigation, state }) => (
         <Drawer
             selectedIndex={new IndexPath(state.index)}
-            onSelect={index => index.row < 3 ? navigation.navigate(state.routeNames[index.row]) : null}>
+            onSelect={index => index.row < 4 ? navigation.navigate(state.routeNames[index.row]) : null}>
             <DrawerItem title='Home' accessoryLeft={renderHomeIcon} />
             <DrawerItem title='Metodos de Pago' accessoryLeft={renderPaymentIcon} />
             <DrawerItem title='Vehículos' accessoryLeft={renderCarIcon} />
+            <DrawerItem title='Historial' accessoryLeft={renderHistoryIcon} />
             <DrawerItem title='Cerrar Sesión' accessoryLeft={renderSignOutIcon} onPress={() => signOutUser()} />
         </Drawer>
     );
@@ -62,6 +68,7 @@ export default function AppDrawer() {
             <Screen name='Home' component={Home} />
             <Screen name='PaymentMethods' component={PaymentMethods} />
             <Screen name='Vehicles' component={Vehicles} />
+            <Screen name='History' component={History} />
             <Screen name='AddPaymentMethod' component={AddPaymentMethod} />
             <Screen name='AddVehicle' component={AddVehicle} />
             <Screen name='AddParking' component={AddParking} />

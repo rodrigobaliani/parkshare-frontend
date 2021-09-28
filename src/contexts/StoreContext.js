@@ -2,7 +2,7 @@ import React, { createContext, useContext, useReducer } from 'react';
 import firestore from '@react-native-firebase/firestore';
 
 const StoreContext = createContext();
-const initialState = { parkings: [], currentParking: {}, hostInitialData: {}, paymentMethods: [], userVehicles: [] };
+const initialState = { parkings: [], currentParking: {}, hostInitialData: {}, paymentMethods: [], userVehicles: [], currentVehicle: {} };
 
 const reducer = (state, action) => {
     switch (action.type) {
@@ -12,7 +12,9 @@ const reducer = (state, action) => {
                 currentParking: state.currentParking,
                 hostInitialData: state.hostInitialData,
                 paymentMethods: state.paymentMethods,
-                userVehicles: state.userVehicles
+                userVehicles: state.userVehicles,
+                currentVehicle: state.currentVehicle,
+                currentPaymentMethod: state.currentPaymentMethod
             }
         case "deleteParking":
             return {
@@ -20,7 +22,9 @@ const reducer = (state, action) => {
                 currentParking: state.currentParking,
                 hostInitialData: state.hostInitialData,
                 paymentMethods: state.paymentMethods,
-                userVehicles: state.userVehicles
+                userVehicles: state.userVehicles,
+                currentVehicle: state.currentVehicle,
+                currentPaymentMethod: state.currentPaymentMethod
             }
         case "setCurrentParking":
             return {
@@ -28,7 +32,9 @@ const reducer = (state, action) => {
                 parkings: state.parkings,
                 hostInitialData: state.hostInitialData,
                 paymentMethods: state.paymentMethods,
-                userVehicles: state.userVehicles
+                userVehicles: state.userVehicles,
+                currentVehicle: state.currentVehicle,
+                currentPaymentMethod: state.currentPaymentMethod
             }
         case "setHostInitialData":
             return {
@@ -36,7 +42,9 @@ const reducer = (state, action) => {
                 parkings: state.parkings,
                 hostInitialData: action.payload,
                 paymentMethods: state.paymentMethods,
-                userVehicles: state.userVehicles
+                userVehicles: state.userVehicles,
+                currentVehicle: state.currentVehicle,
+                currentPaymentMethod: state.currentPaymentMethod
             }
         case "setPaymentMethods":
             return {
@@ -44,7 +52,9 @@ const reducer = (state, action) => {
                 parkings: state.parkings,
                 hostInitialData: state.hostInitialData,
                 paymentMethods: action.payload,
-                userVehicles: state.userVehicles
+                userVehicles: state.userVehicles,
+                currentVehicle: state.currentVehicle,
+                currentPaymentMethod: state.currentPaymentMethod
             }
         case "setUserVehicles":
             return {
@@ -52,7 +62,31 @@ const reducer = (state, action) => {
                 parkings: state.parkings,
                 hostInitialData: state.hostInitialData,
                 paymentMethods: state.paymentMethods,
-                userVehicles: action.payload
+                userVehicles: action.payload,
+                currentVehicle: state.currentVehicle,
+                currentPaymentMethod: state.currentPaymentMethod
+            }
+        case "setCurrentVehicle":
+            return {
+                currentParking: state.currentParking,
+                parkings: state.parkings,
+                hostInitialData: state.hostInitialData,
+                paymentMethods: state.paymentMethods,
+                userVehicles: state.userVehicles,
+                currentVehicle: action.payload,
+                currentPaymentMethod: state.currentPaymentMethod
+
+            }
+        case "setCurrentPaymentMethod":
+            return {
+                currentPaymentMethod: action.payload,
+                currentParking: state.currentParking,
+                parkings: state.parkings,
+                hostInitialData: state.hostInitialData,
+                paymentMethods: state.paymentMethods,
+                userVehicles: state.userVehicles,
+                currentVehicle: state.currentVehicle,
+                currentPaymentMethod: action.payload
             }
         default:
             throw new Error(`Unhandled action type: ${action.type}`);
