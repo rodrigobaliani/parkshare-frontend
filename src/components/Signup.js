@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, KeyboardAvoidingView, TouchableWithoutFeedback } from 'react-native';
+import { View, KeyboardAvoidingView, TouchableWithoutFeedback, Image } from 'react-native';
 import {
     Button,
     Input,
@@ -86,13 +86,12 @@ const Signup = ({ navigation }) => {
     return (
         <KeyboardAvoidingView>
             <ImageOverlay source={{ uri: "https://somethingoffreedom.com/wp-content/uploads/2017/09/Obelisk-Buenos-Aires-Sights.jpg" }} height={660} contentPosition="bottom">
+
                 <View style={styles.headerContainer}>
-                    <Text category='h1' status='control'>
-                        Parkshare
-                        </Text>
+                    <Image source={require('../assets/parkshare-logo.png')} style={styles.logo} />
                     <Text style={styles.signUpLabel} category='s1' status='control'>
                         Crear una cuenta
-                        </Text>
+                    </Text>
                 </View>
                 <View style={styles.formContainer}>
                     <Input
@@ -176,6 +175,10 @@ const Signup = ({ navigation }) => {
 const themedStyles = StyleService.create({
     container: {
         flex: 1,
+    },
+    logo: {
+        height: 157,
+        width: 184
     },
     headerContainer: {
         justifyContent: 'center',
