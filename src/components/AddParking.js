@@ -9,6 +9,7 @@ import { LogBox } from 'react-native';
 import { useStore } from '../contexts/StoreContext';
 import firestore from '@react-native-firebase/firestore';
 import moment from 'moment'
+import { addColabParking } from '../controllers/colabParkingController';
 
 
 
@@ -96,7 +97,7 @@ const AddParking = ({ navigation }) => {
 
     };
 
-    const handleAddParking = () => {
+    const handleAddParking = async () => {
         const now = new Date()
         const expiryDate = new Date(now.getTime() + timeOptions[parkingTime.row].time * 60000);
         const parking = {
@@ -121,6 +122,14 @@ const AddParking = ({ navigation }) => {
                 dispatch({ type: "addParking", payload: stateParking })
                 navigation.navigate("HostWaiting", { parkingId: docRef.id })
             });
+        /*const docRef = await addColabParking(parking);
+        console.log(docRef)
+        const stateParking = {
+            id: docRef.id,
+            ...docRef
+        }
+        dispatch({ type: "addParking", payload: stateParking })
+        navigation.navigate("HostWaiting", { parkingId: docRef.id })*/
     }
 
     return (

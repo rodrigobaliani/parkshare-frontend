@@ -5,6 +5,7 @@ import TopHeader from './TopHeader';
 import firestore from '@react-native-firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
 import { useStore } from '../contexts/StoreContext';
+import { addPaymentMethod } from '../controllers/paymentMethodController';
 
 
 const AddPaymentMethod = ({ navigation }) => {
@@ -32,7 +33,7 @@ const AddPaymentMethod = ({ navigation }) => {
     };
 
     const handleAddButtonPress = async () => {
-        var card = {
+        const card = {
             number: number,
             cardholderName: name,
             expireDate: date.getMonth() + 1 + '/' + date.getFullYear(),
@@ -42,20 +43,12 @@ const AddPaymentMethod = ({ navigation }) => {
         }
 
         try {
-            const docRef = await firestore()
-                .collection('userData')
-                .doc(`${currentUser.uid}`)
-                .collection('paymentMethods')
-                .add(card)
-            card = {
-                id: docRef.id,
-                ...card
-            }
+            const payment = await addPaymentMethod(currentUser.uid, card)
             const paymentMethods = state.paymentMethods
             if (paymentMethods.length === 0) {
-                card.primary = true;
+                payment.primary = true;
             }
-            paymentMethods.push(card)
+            paymentMethods.push(payment)
             dispatch({ type: 'setPaymentMethods', payload: paymentMethods })
             navigation.goBack();
         } catch (error) {

@@ -5,6 +5,7 @@ import TopHeader from './TopHeader';
 import firestore from '@react-native-firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
 import { useStore } from '../contexts/StoreContext';
+import { getUserPaymentMethods, editPaymentMethod, deletePaymentMethod } from '../controllers/paymentMethodController';
 
 const PaymentMethods = ({ navigation }) => {
 
@@ -106,15 +107,7 @@ const PaymentMethods = ({ navigation }) => {
             if (card.id === id) {
                 card.primary = !card.primary;
                 try {
-                    await firestore()
-                        .collection('userData')
-                        .doc(`${currentUser.uid}`)
-                        .collection('paymentMethods')
-                        .doc(id)
-                        .update({
-                            primary: card.primary
-                        })
-                    console.log(card)
+                    await editPaymentMethod(currentUser.uid, card)
                     dispatch({ type: 'setCurrentPaymentMethod', payload: card })
                 } catch (error) {
                     console.log(error)
@@ -124,14 +117,7 @@ const PaymentMethods = ({ navigation }) => {
                 if (card.primary) {
                     card.primary = !card.primary
                     try {
-                        await firestore()
-                            .collection('userData')
-                            .doc(`${currentUser.uid}`)
-                            .collection('paymentMethods')
-                            .doc(card.id)
-                            .update({
-                                primary: card.primary
-                            })
+                        await editPaymentMethod(currentUser.uid, card)
                     } catch (error) {
                         console.log(error)
                     }
@@ -139,7 +125,6 @@ const PaymentMethods = ({ navigation }) => {
             }
         })
         dispatch({ type: 'setPaymentMethods', payload: cards })
-        console.log(state)
     }
 
     const handleDeleteCard = async (id) => {
@@ -149,16 +134,12 @@ const PaymentMethods = ({ navigation }) => {
             newPrimary = true;
         }
         const cards = state.paymentMethods.filter(c => c.id !== id)
-        if (newPrimary && cards.length > 0) {
-            cards[0].primary = true;
-        }
         try {
-            await firestore()
-                .collection('userData')
-                .doc(`${currentUser.uid}`)
-                .collection('paymentMethods')
-                .doc(id)
-                .delete()
+            if (newPrimary && cards.length > 0) {
+                cards[0].primary = true;
+                await editPaymentMethod(currentUser.uid, cards[0])
+            }
+            await deletePaymentMethod(currentUser.uid, id)
         } catch (error) {
             console.log(error)
         }
@@ -172,16 +153,11 @@ const PaymentMethods = ({ navigation }) => {
     useEffect(async () => {
         try {
             const paymentMethods = [];
-            const paymentMethodsDb = await firestore()
-                .collection('userData')
-                .doc(`${currentUser.uid}`)
-                .collection('paymentMethods')
-                .get();
-
+            const paymentMethodsDb = await getUserPaymentMethods(currentUser.uid);
             paymentMethodsDb.forEach((doc) => {
                 const card = {
                     id: doc.id,
-                    ...doc.data()
+                    ...doc
                 }
                 paymentMethods.push(card)
             })
@@ -189,7 +165,7 @@ const PaymentMethods = ({ navigation }) => {
         } catch (error) {
             console.log(error)
         }
-    }, [])
+    }, [navigation])
 
     return (
         <React.Fragment>

@@ -105,7 +105,7 @@ const History = ({ navigation }) => {
                 </React.Fragment>
                 :
                 <React.Fragment>
-                    {info.item.candidateVehicle && <Text>Candidato: {info.item.candidateVehicle.brand} {info.item.candidateVehicle.model} | {info.item.candidateVehicle.licensePlate}</Text>}
+                    {info.item.candidateVehicle && <Text>Anfitrión: {info.item.candidateVehicle.brand} {info.item.candidateVehicle.model} | {info.item.candidateVehicle.licensePlate}</Text>}
                     {info.item.hostVehicle && <Text>Tu vehículo: {info.item.hostVehicle.brand} {info.item.hostVehicle.model} | {info.item.hostVehicle.licensePlate}</Text>}
                 </React.Fragment>
             }
@@ -142,7 +142,7 @@ const History = ({ navigation }) => {
             <TabBar
                 selectedIndex={selectedTab}
                 onSelect={setSelectedTab}>
-                <Tab title='HOST' />
+                <Tab title='ANFITRIÓN' />
                 <Tab title='CANDIDATO' />
             </TabBar>
             <List

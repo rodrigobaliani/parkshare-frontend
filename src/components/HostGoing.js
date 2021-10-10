@@ -13,6 +13,7 @@ import firestore from '@react-native-firebase/firestore';
 import moment from 'moment'
 import MapViewDirections from 'react-native-maps-directions';
 import TopMenu from './TopMenu';
+import { editColabParking } from '../controllers/colabParkingController';
 
 const HostGoing = ({ navigation, route }) => {
 
@@ -31,6 +32,7 @@ const HostGoing = ({ navigation, route }) => {
     const { state, dispatch } = useStore();
     const { currentUser } = useAuth();
     const { parkingId } = route.params
+    let unsubscribe = {};
 
     const onSnapshot = useCallback((documentSnapshot) => {
         const data = documentSnapshot.data().candidateTripInfo;
@@ -48,25 +50,30 @@ const HostGoing = ({ navigation, route }) => {
         if (status === '4') {
             dispatch({ type: "deleteParking", payload: parkingId })
             navigation.navigate('HostRate', { mode: '1', parkingId: parkingId, afterRate: false })
+            unsubscribe()
         }
     })
 
     useEffect(() => {
-        const subscriber = firestore()
+        unsubscribe = firestore()
             .collection('parkings')
             .doc(parkingId)
             .onSnapshot(onSnapshot)
-        return subscriber
-    }, []);
+        return () => unsubscribe()
+    }, [navigation]);
 
     const handleEndButtonClick = async () => {
         try {
-            await firestore()
+            const updateParking = {
+                status: '5',
+            }
+            await editColabParking(parkingId, updateParking)
+            /*await firestore()
                 .collection('parkings')
                 .doc(parkingId)
                 .update({
                     status: '5'
-                })
+                })*/
             dispatch({ type: "deleteParking", payload: parkingId })
             navigation.navigate('HostRate', { mode: '2', parkingId: parkingId, afterRate: false })
         }

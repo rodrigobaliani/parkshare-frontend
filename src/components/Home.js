@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { StyleSheet, PermissionsAndroid, Image, View } from 'react-native'
 import { useAuth } from '../contexts/AuthContext';
-import { Icon, Button, Modal, Text, Card, Spinner } from '@ui-kitten/components';
+import { Icon, Button, Modal, Text, Card } from '@ui-kitten/components';
 import MapView, { PROVIDER_GOOGLE, Marker } from 'react-native-maps'
 import SnackBar from 'react-native-snackbar-component'
 import Geolocation from '@react-native-community/geolocation';

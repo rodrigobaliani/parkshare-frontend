@@ -13,6 +13,7 @@ import firestore from '@react-native-firebase/firestore';
 import moment from 'moment'
 import MapViewDirections from 'react-native-maps-directions';
 import TopMenu from './TopMenu';
+import { editColabParking } from '../controllers/colabParkingController';
 
 const RouteParking = ({ navigation }) => {
 
@@ -61,7 +62,15 @@ const RouteParking = ({ navigation }) => {
                 distance: state.currentParking.distance,
                 duration: state.currentParking.duration
             }
-            await firestore()
+            const updateParking = {
+                candidateUser: currentUser.uid,
+                status: '1',
+                candidateTripInfo: candidateTripInfo,
+                paymentMethod: state.currentPaymentMethod,
+                candidateVehicle: state.currentVehicle
+            }
+            await editColabParking(state.currentParking.parkingId, updateParking)
+            /*await firestore()
                 .collection('parkings')
                 .doc(state.currentParking.parkingId)
                 .update({
@@ -70,7 +79,7 @@ const RouteParking = ({ navigation }) => {
                     candidateTripInfo: candidateTripInfo,
                     paymentMethod: state.currentPaymentMethod,
                     candidateVehicle: state.currentVehicle
-                })
+                })*/
             navigation.navigate("CandidateGoing", { parkingId: state.currentParking.parkingId })
         }
         catch (error) {
@@ -81,27 +90,6 @@ const RouteParking = ({ navigation }) => {
     const handleChangePaymentButtonClick = () => {
         navigation.navigate("PaymentMethods")
     }
-    /* useEffect(async () => {
-         try {
-             const defaultPayment = await firestore()
-                 .collection('userData')
-                 .doc(`${currentUser.uid}`)
-                 .collection('paymentMethods')
-                 .where('primary', '==', true)
-                 .get()
-             const defaultVehicle = await firestore()
-                 .collection('userData')
-                 .doc(`${currentUser.uid}`)
-                 .collection('userVehicles')
-                 .where('primary', '==', true)
-                 .get()
-             dispatch({ type: 'setCurrentVehicle', payload: defaultVehicle.docs[0].data() })
-             dispatch({ type: 'setCurrentPaymentMethod', payload: defaultPayment.docs[0].data() })
-         } catch (error) {
-             console.log(error)
-         }
- 
-     }, [])*/
 
     return (
         <React.Fragment>

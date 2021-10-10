@@ -4,6 +4,7 @@ import { Text, Spinner, useTheme, Button, Icon, Input, Layout } from '@ui-kitten
 import { useStore } from '../contexts/StoreContext';
 import StarRating from 'react-native-star-rating';
 import firestore from '@react-native-firebase/firestore';
+import { editColabParking } from '../controllers/colabParkingController';
 
 
 const CandidateRate = ({ navigation, route }) => {
@@ -17,14 +18,18 @@ const CandidateRate = ({ navigation, route }) => {
 
     const handleButton = async () => {
         try {
-            const docRef = await firestore()
+            const updateParking = {
+                candidateRating: rating,
+                candidateComment: comment,
+            }
+            await editColabParking(parkingId, updateParking)
+            /*const docRef = await firestore()
                 .collection('parkings')
                 .doc(parkingId)
                 .update({
                     candidateRating: rating,
                     candidateComment: comment
-                })
-            console.log(docRef)
+                })*/
             navigation.navigate('Home')
         }
         catch (error) {
