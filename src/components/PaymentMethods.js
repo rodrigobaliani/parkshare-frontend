@@ -57,7 +57,7 @@ const PaymentMethods = ({ navigation }) => {
                 style={styles.cardNumber}
                 category='h6'
                 status='control'>
-                {info.item.number}
+                {info.item.number.substring(0, 4) + " **** **** ****"}
             </Text>
             <View style={styles.cardNameContainer}>
                 <Text
