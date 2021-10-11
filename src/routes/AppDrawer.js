@@ -14,6 +14,7 @@ import PaymentMethods from '../components/PaymentMethods';
 import AddPaymentMethod from '../components/AddPaymentMethod';
 import Vehicles from '../components/Vehicles';
 import AddVehicle from '../components/AddVehicle';
+import PrivateParking from '../components/PrivateParking';
 
 const { Navigator, Screen } = createDrawerNavigator();
 
@@ -51,6 +52,7 @@ export default function AppDrawer() {
             selectedIndex={new IndexPath(state.index)}
             onSelect={index => index.row < 3 ? navigation.navigate(state.routeNames[index.row]) : null}>
             <DrawerItem title='Home' accessoryLeft={renderHomeIcon} />
+            <DrawerItem title='PrivateParking' accessoryLeft={renderHomeIcon} />
             <DrawerItem title='Metodos de Pago' accessoryLeft={renderPaymentIcon} />
             <DrawerItem title='Vehículos' accessoryLeft={renderCarIcon} />
             <DrawerItem title='Cerrar Sesión' accessoryLeft={renderSignOutIcon} onPress={() => signOutUser()} />
@@ -60,6 +62,7 @@ export default function AppDrawer() {
     return (
         <Navigator drawerContent={props => <DrawerContent {...props} />}>
             <Screen name='Home' component={Home} />
+            <Screen name='PrivateParking' component={PrivateParking} />
             <Screen name='PaymentMethods' component={PaymentMethods} />
             <Screen name='Vehicles' component={Vehicles} />
             <Screen name='AddPaymentMethod' component={AddPaymentMethod} />
