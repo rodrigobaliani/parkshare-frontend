@@ -13,6 +13,7 @@ import firestore from '@react-native-firebase/firestore';
 import moment from 'moment'
 import MapViewDirections from 'react-native-maps-directions';
 import TopMenu from './TopMenu';
+import { editColabParking } from '../controllers/colabParkingController';
 
 const CandidateGoing = ({ navigation, route }) => {
 
@@ -29,6 +30,7 @@ const CandidateGoing = ({ navigation, route }) => {
     const { state, dispatch } = useStore();
     const { currentUser } = useAuth();
     const { parkingId } = route.params
+    let unsubscribe = {};
 
     useEffect(() => {
         const watchId = Geolocation.watchPosition(
@@ -39,7 +41,6 @@ const CandidateGoing = ({ navigation, route }) => {
                 const urlToFetchDistance = 'https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins=' + position.coords.latitude + ',' + position.coords.longitude
                     + '&destinations=' + state.currentParking.hostLat + '%2C' + state.currentParking.hostLng
                     + '&key=' + "AIzaSyBdTNWWsw0iktleWC1qKn3uVMmW-CfGqzQ";
-                console.log(urlToFetchDistance)
                 try {
                     let res = await fetch(urlToFetchDistance)
                     res = await res.json();
@@ -60,45 +61,60 @@ const CandidateGoing = ({ navigation, route }) => {
                     }
                     if (distanceMeters <= 400 && distanceMeters >= 100) {
                         if (!nearDestination) setNearDestination(true)
-                        await firestore()
+                        const updateParking = {
+                            candidateTripInfo: candidateTripInfo,
+                            status: '3',
+                        }
+                        await editColabParking(parkingId, updateParking)
+                        /*await firestore()
                             .collection('parkings')
                             .doc(parkingId)
                             .update({
                                 candidateTripInfo: candidateTripInfo,
                                 status: '3'
-                            })
+                            })*/
 
                     }
                     else if (distanceMeters < 100) {
-                        await firestore()
+                        unsubscribe = await firestore()
                             .collection('parkings')
                             .doc(parkingId)
-                            .onSnapshot((documentSnapshot => {
+                            .onSnapshot(async (documentSnapshot) => {
                                 if (documentSnapshot.data().status === '5') {
                                     dispatch({ type: "deleteParking", payload: parkingId })
-                                    navigation.navigate('CandidateRate', { mode: '1', parkingId: parkingId })
+                                    unsubscribe();
+                                    navigation.navigate('CandidateRate', { mode: '1', parkingId: parkingId, afterRate: false })
                                 }
                                 else {
-                                    firestore()
+                                    const updateParking = {
+                                        candidateTripInfo: candidateTripInfo,
+                                    }
+                                    await editColabParking(parkingId, updateParking)
+                                    /*firestore()
                                         .collection('parkings')
                                         .doc(parkingId)
                                         .update({
                                             candidateTripInfo: candidateTripInfo,
-                                        })
+                                        })*/
                                 }
 
-                            }))
+                            })
 
                     }
                     else {
-                        await firestore()
+                        const updateParking = {
+                            candidateTripInfo: candidateTripInfo,
+                            status: '2',
+                        }
+                        await editColabParking(parkingId, updateParking)
+                        /*await firestore()
                             .collection('parkings')
                             .doc(parkingId)
                             .update({
                                 candidateTripInfo: candidateTripInfo,
                                 status: '2'
 
-                            })
+                            })*/
                     }
                 }
                 catch (error) {
@@ -110,18 +126,23 @@ const CandidateGoing = ({ navigation, route }) => {
         );
 
         return () => Geolocation.clearWatch(watchId);
-    }, []);
+    }, [navigation]);
 
     const handleEndButtonClick = async () => {
         try {
-            await firestore()
+            const updateParking = {
+                status: '4',
+            }
+            await editColabParking(parkingId, updateParking)
+            /*await firestore()
                 .collection('parkings')
                 .doc(parkingId)
                 .update({
                     status: '4'
-                })
+                })*/
             dispatch({ type: "deleteParking", payload: parkingId })
-            navigation.navigate('CandidateRate', { mode: '2', parkingId: parkingId })
+            navigation.navigate('CandidateRate', { mode: '2', parkingId: parkingId, afterRate: false })
+            unsubscribe();
         }
         catch (error) {
             console.log(error)
@@ -208,7 +229,7 @@ const CandidateGoing = ({ navigation, route }) => {
                             }
                             <Text style={styles.textInfo} category='h5' status='info'>Llegás en {currentDuration}</Text>
                             <Text style={styles.textInfo} category='h5'>Distancia: {currentDistance}</Text>
-                            <Text style={styles.textInfo} category='h6'>Auto Anfitrión:: Volkswagen Vento - PIH 372</Text>
+                            <Text style={styles.textInfo} category='h6'>Anfitrión: {state.currentParking.hostVehicle.brand} {state.currentParking.hostVehicle.model} - {state.currentParking.hostVehicle.licensePlate}</Text>
                         </View>
                         <View style={styles.buttonContainer}>
                             <Button size='small'>CANCELAR</Button>

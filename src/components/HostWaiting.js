@@ -3,6 +3,7 @@ import { View, StyleSheet, } from 'react-native'
 import { Text, Spinner, useTheme, Button } from '@ui-kitten/components';
 import firestore from '@react-native-firebase/firestore';
 import { useStore } from '../contexts/StoreContext';
+import { editColabParking } from '../controllers/colabParkingController';
 
 const HostWaiting = ({ navigation, route }) => {
 
@@ -10,8 +11,9 @@ const HostWaiting = ({ navigation, route }) => {
     const { state, dispatch } = useStore();
     const { parkingId } = route.params
     const [waitingCandidate, setWaitingCandidate] = useState(true)
+    let unsubscribe = {};
 
-    const onSnapshot = useCallback((documentSnapshot) => {
+    const onSnapshot = useCallback(async (documentSnapshot) => {
         const doc = documentSnapshot.data()
         if (doc.candidateUser !== '' && doc.status === '1') {
             const initialLocation = {
@@ -22,20 +24,25 @@ const HostWaiting = ({ navigation, route }) => {
                 hostLat: doc.lat,
                 hostLng: doc.lng
             }
-            firestore()
+            const updateParking = {
+                status: '2'
+            }
+            await editColabParking(parkingId, updateParking)
+            /*firestore()
                 .collection('parkings')
                 .doc(parkingId)
                 .update({
                     status: '2'
-                })
+                })*/
             setWaitingCandidate(false)
             dispatch({ type: "setHostInitialData", payload: initialLocation })
             navigation.navigate('HostGoing', { parkingId: parkingId })
+            unsubscribe();
         }
     })
 
     useEffect(() => {
-        const unsubscribe = firestore()
+        unsubscribe = firestore()
             .collection('parkings')
             .doc(parkingId)
             .onSnapshot(onSnapshot)

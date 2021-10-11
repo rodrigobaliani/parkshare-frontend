@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, TouchableWithoutFeedback, KeyboardAvoidingView } from 'react-native';
+import { StyleSheet, View, TouchableWithoutFeedback, KeyboardAvoidingView, Image } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
 import { getFirebaseErrorMessage } from '../constants/ErrorMessages'
 import { Button, Input, Text, Icon } from '@ui-kitten/components';
@@ -59,12 +59,10 @@ const Login = ({ navigation }) => {
                 <React.Fragment>
                     <View style={styles.container}>
                         <View style={styles.headerContainer}>
-                            <Text category='h1' status='control'>
-                                Parkshare
-                        </Text>
+                            <Image source={require('../assets/parkshare-logo.png')} style={styles.logo} />
                             <Text style={styles.signInLabel} category='s1' status='control'>
                                 Ingrese a su cuenta
-                        </Text>
+                            </Text>
                         </View>
                         <View style={styles.formContainer}>
                             <Input
@@ -85,7 +83,7 @@ const Login = ({ navigation }) => {
                             <View style={styles.forgotPasswordContainer}>
                                 <Button style={styles.forgotPasswordButton} appearance='ghost' status='control'>
                                     ¿Olvidaste tu contraseña?
-                            </Button>
+                                </Button>
                             </View>
                         </View>
                         <Button
@@ -94,11 +92,11 @@ const Login = ({ navigation }) => {
                             onPress={() => signInUser(email, password)}
                         >
                             INICIAR SESIÓN
-                    </Button>
+                        </Button>
                         <View style={styles.socialAuthContainer}>
                             <Text style={styles.socialAuthHintText} status='control'>
                                 O inicie sesión con redes sociales
-                        </Text>
+                            </Text>
                             <View style={styles.socialAuthButtonsContainer}>
                                 <Button
                                     appearance='ghost'
@@ -120,7 +118,7 @@ const Login = ({ navigation }) => {
                             onPress={() => navigation.navigate('Signup')}
                         >
                             ¿No tiene una cuenta? Registrese
-                    </Button>
+                        </Button>
                     </View>
                     <SnackBar
                         visible={error.length > 0}
@@ -139,6 +137,10 @@ const Login = ({ navigation }) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+    },
+    logo: {
+        height: 157,
+        width: 184
     },
     headerContainer: {
         minHeight: 216,

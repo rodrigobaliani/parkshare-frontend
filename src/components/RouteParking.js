@@ -13,6 +13,7 @@ import firestore from '@react-native-firebase/firestore';
 import moment from 'moment'
 import MapViewDirections from 'react-native-maps-directions';
 import TopMenu from './TopMenu';
+import { editColabParking } from '../controllers/colabParkingController';
 
 const RouteParking = ({ navigation }) => {
 
@@ -23,11 +24,18 @@ const RouteParking = ({ navigation }) => {
         longitudeDelta: 0.0121,
     }
 
+
     const theme = useTheme();
     const mapRef = useRef();
     const { width, height } = Dimensions.get('window');
     const { state, dispatch } = useStore();
     const { currentUser } = useAuth();
+
+    const cardTypes = {
+        visa: 'Visa',
+        master: 'MasterCard',
+        amex: 'American Express'
+    }
 
     const handleCancelButtonClick = () => {
         const cleanParking = {
@@ -54,19 +62,33 @@ const RouteParking = ({ navigation }) => {
                 distance: state.currentParking.distance,
                 duration: state.currentParking.duration
             }
-            await firestore()
+            const updateParking = {
+                candidateUser: currentUser.uid,
+                status: '1',
+                candidateTripInfo: candidateTripInfo,
+                paymentMethod: state.currentPaymentMethod,
+                candidateVehicle: state.currentVehicle
+            }
+            await editColabParking(state.currentParking.parkingId, updateParking)
+            /*await firestore()
                 .collection('parkings')
                 .doc(state.currentParking.parkingId)
                 .update({
                     candidateUser: currentUser.uid,
                     status: '1',
-                    candidateTripInfo: candidateTripInfo
-                })
+                    candidateTripInfo: candidateTripInfo,
+                    paymentMethod: state.currentPaymentMethod,
+                    candidateVehicle: state.currentVehicle
+                })*/
             navigation.navigate("CandidateGoing", { parkingId: state.currentParking.parkingId })
         }
         catch (error) {
             console.log(error)
         }
+    }
+
+    const handleChangePaymentButtonClick = () => {
+        navigation.navigate("PaymentMethods")
     }
 
     return (
@@ -155,6 +177,10 @@ const RouteParking = ({ navigation }) => {
                         <View style={styles.textContainer}>
                             <Text style={styles.textInfo} category='h5' status='info'>Llegás en {state.currentParking.duration}</Text>
                             <Text style={styles.textInfo} category='h6'>Distancia: {state.currentParking.distance}</Text>
+                            <View style={styles.paymentContainer}>
+                                <Text style={styles.textInfo} category='h6'>Pago: {cardTypes[`${state.currentPaymentMethod.type}`]} {state.currentPaymentMethod.number.substring(0, 4)}...</Text>
+                                <Button size='tiny' onPress={handleChangePaymentButtonClick} appearance='ghost'>CAMBIAR</Button>
+                            </View>
                         </View>
                         <View style={styles.buttonContainer}>
                             <Button size='small' onPress={handleCancelButtonClick}>CANCELAR</Button>
@@ -170,12 +196,12 @@ const RouteParking = ({ navigation }) => {
 const styles = StyleSheet.create({
     map: {
         ...StyleSheet.absoluteFillObject,
-        height: '80%'
+        height: '75%'
     },
     container: {
-        top: "80%",
+        top: "75%",
         flex: 1,
-        height: "20%",
+        height: "25%",
     },
     textContainer: {
         marginVertical: 10,
@@ -188,6 +214,10 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         marginHorizontal: 30,
+    },
+    paymentContainer: {
+        flexDirection: 'row',
+        justifyContent: 'center',
     }
 })
 

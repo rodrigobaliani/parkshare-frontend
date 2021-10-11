@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { StyleSheet, PermissionsAndroid, Image, View } from 'react-native'
 import { useAuth } from '../contexts/AuthContext';
-import { Icon, Button, Modal, Text, Card, Spinner } from '@ui-kitten/components';
+import { Icon, Button, Modal, Text, Card } from '@ui-kitten/components';
 import MapView, { PROVIDER_GOOGLE, Marker } from 'react-native-maps'
 import SnackBar from 'react-native-snackbar-component'
 import Geolocation from '@react-native-community/geolocation';
@@ -64,15 +64,20 @@ const Home = ({ navigation }) => {
 
     const handleBookingButtonPress = async () => {
         setVisibleModal(false)
-        Geolocation.getCurrentPosition(async (pos) => {
-            const crd = pos.coords;
-            const parking = state.parkings.filter((doc) => doc.id === modalInfo.parkingId)
-            await setConfirmParkingData(crd.latitude, crd.longitude, parking[0].lat, parking[0].lng)
-            navigation.navigate("RouteParking")
+        if (!state.currentVehicle || !state.currentPaymentMethod) {
+            setError('Debe definir un vehículo y un medio de pago para continuar')
+        }
+        else {
+            Geolocation.getCurrentPosition(async (pos) => {
+                const crd = pos.coords;
+                const parking = state.parkings.filter((doc) => doc.id === modalInfo.parkingId)
+                await setConfirmParkingData(crd.latitude, crd.longitude, parking[0].lat, parking[0].lng)
+                navigation.navigate("RouteParking")
 
-        }, error => alert(JSON.stringify(error)),
-            { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 },
-        );
+            }, error => alert(JSON.stringify(error)),
+                { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 },
+            );
+        }
     }
 
     const setConfirmParkingData = async (lat1, lng1, lat2, lng2) => { // Pass Latitude & Longitude of both points as a parameter
@@ -82,6 +87,12 @@ const Home = ({ navigation }) => {
         try {
             let res = await fetch(urlToFetchDistance)
             res = await res.json();
+            const hostVehicle = {
+                brand: modalInfo.carBrand,
+                model: modalInfo.carModel,
+                licensePlate: modalInfo.carPlate
+
+            }
             const currentParking = {
                 hostLat: lat2,
                 hostLng: lng2,
@@ -91,7 +102,8 @@ const Home = ({ navigation }) => {
                 lngDelta: mapRegion.longitudeDelta,
                 distance: res.rows[0].elements[0].distance.text,
                 duration: res.rows[0].elements[0].duration.text,
-                parkingId: modalInfo.parkingId
+                parkingId: modalInfo.parkingId,
+                hostVehicle: hostVehicle
             }
             dispatch({ type: "setCurrentParking", payload: currentParking })
         }
@@ -145,6 +157,20 @@ const Home = ({ navigation }) => {
                         }
                     });
                 })
+        const defaultPayment = await firestore()
+            .collection('userData')
+            .doc(`${currentUser.uid}`)
+            .collection('paymentMethods')
+            .where('primary', '==', true)
+            .get()
+        const defaultVehicle = await firestore()
+            .collection('userData')
+            .doc(`${currentUser.uid}`)
+            .collection('userVehicles')
+            .where('primary', '==', true)
+            .get()
+        dispatch({ type: 'setCurrentVehicle', payload: defaultVehicle.docs[0].data() })
+        dispatch({ type: 'setCurrentPaymentMethod', payload: defaultPayment.docs[0].data() })
         const welcomeMessage = `¡Bienvenido ${currentUser.email} !`
         setMessage(welcomeMessage);
         return () => unsubscribe();
@@ -179,9 +205,9 @@ const Home = ({ navigation }) => {
         const minutes = duration.asMinutes();
         const expiryTime = Math.round(minutes)
         setModalInfo({
-            carBrand: parking[0].carBrand,
-            carModel: parking[0].carModel,
-            carPlate: parking[0].carPlate,
+            carBrand: parking[0].hostVehicle.brand,
+            carModel: parking[0].hostVehicle.model,
+            carPlate: parking[0].hostVehicle.licensePlate,
             expiryTime: expiryTime,
             parkingId: parkingId
         })

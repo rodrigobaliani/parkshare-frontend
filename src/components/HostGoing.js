@@ -13,6 +13,7 @@ import firestore from '@react-native-firebase/firestore';
 import moment from 'moment'
 import MapViewDirections from 'react-native-maps-directions';
 import TopMenu from './TopMenu';
+import { editColabParking } from '../controllers/colabParkingController';
 
 const HostGoing = ({ navigation, route }) => {
 
@@ -20,11 +21,7 @@ const HostGoing = ({ navigation, route }) => {
     const [currentLongitude, setCurrentLongitude] = useState(0);
     const [currentLatitudeDelta, setCurrentLatitudeDelta] = useState(0);
     const [currentLongitudeDelta, setCurrentLongitudeDelta] = useState(0);
-    const [routeHostLatitude, setRouteHostLatitude] = useState(0);
-    const [routeHostLongitude, setRouteHostLongitude] = useState(0);
-    const [routeCandidateLatitude, setRouteCandidateLatitude] = useState(0);
-    const [routeCandidateLongitude, setRouteCandidateLongitude] = useState(0);
-    const [currentTimestamp, setCurrentTimestamp] = useState(0);
+    const [candidateVehicle, setCandidateVehicle] = useState({ model: '', brand: '', licensePlate: '' })
     const [currentDistance, setCurrentDistance] = useState('');
     const [currentDuration, setCurrentDuration] = useState('');
     const [nearDestination, setNearDestination] = useState(false);
@@ -35,6 +32,7 @@ const HostGoing = ({ navigation, route }) => {
     const { state, dispatch } = useStore();
     const { currentUser } = useAuth();
     const { parkingId } = route.params
+    let unsubscribe = {};
 
     const onSnapshot = useCallback((documentSnapshot) => {
         const data = documentSnapshot.data().candidateTripInfo;
@@ -45,33 +43,39 @@ const HostGoing = ({ navigation, route }) => {
         setCurrentLatitudeDelta(data.latDelta)
         setCurrentDuration(data.duration)
         setCurrentDistance(data.distance)
+        setCandidateVehicle(documentSnapshot.data().candidateVehicle)
         if (status === '3') {
             setNearDestination(true)
         }
         if (status === '4') {
             dispatch({ type: "deleteParking", payload: parkingId })
-            navigation.navigate('HostRate', { mode: '1', parkingId: parkingId })
+            navigation.navigate('HostRate', { mode: '1', parkingId: parkingId, afterRate: false })
+            unsubscribe()
         }
     })
 
     useEffect(() => {
-        const subscriber = firestore()
+        unsubscribe = firestore()
             .collection('parkings')
             .doc(parkingId)
             .onSnapshot(onSnapshot)
-        return subscriber
-    }, []);
+        return () => unsubscribe()
+    }, [navigation]);
 
     const handleEndButtonClick = async () => {
         try {
-            await firestore()
+            const updateParking = {
+                status: '5',
+            }
+            await editColabParking(parkingId, updateParking)
+            /*await firestore()
                 .collection('parkings')
                 .doc(parkingId)
                 .update({
                     status: '5'
-                })
+                })*/
             dispatch({ type: "deleteParking", payload: parkingId })
-            navigation.navigate('HostRate', { mode: '2', parkingId: parkingId })
+            navigation.navigate('HostRate', { mode: '2', parkingId: parkingId, afterRate: false })
         }
         catch (error) {
             console.log(error)
@@ -157,7 +161,7 @@ const HostGoing = ({ navigation, route }) => {
                         }
                         <Text style={styles.textInfo} category='h5' status='info'>Llega en {currentDuration}</Text>
                         <Text style={styles.textInfo} category='h5'>Distancia: {currentDistance}</Text>
-                        <Text style={styles.textInfo} category='h6'>Auto: Renault Sandero - OPR 621</Text>
+                        <Text style={styles.textInfo} category='h6'>Candidato: {candidateVehicle.brand} {candidateVehicle.model} - {candidateVehicle.licensePlate}</Text>
 
                     </View>
                     <View style={styles.buttonContainer}>

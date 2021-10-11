@@ -5,6 +5,7 @@ import TopHeader from './TopHeader';
 import firestore from '@react-native-firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
 import { useStore } from '../contexts/StoreContext';
+import { editVehicle, deleteVehicle } from '../controllers/vehicleController';
 
 const Vehicles = ({ navigation }) => {
 
@@ -100,14 +101,7 @@ const Vehicles = ({ navigation }) => {
             if (vehicle.id === id) {
                 vehicle.primary = !vehicle.primary;
                 try {
-                    await firestore()
-                        .collection('userData')
-                        .doc(`${currentUser.uid}`)
-                        .collection('userVehicles')
-                        .doc(id)
-                        .update({
-                            primary: vehicle.primary
-                        })
+                    await editVehicle(currentUser.uid, vehicle)
                 } catch (error) {
                     console.log(error)
                 }
@@ -116,14 +110,7 @@ const Vehicles = ({ navigation }) => {
                 if (vehicle.primary) {
                     vehicle.primary = !vehicle.primary
                     try {
-                        await firestore()
-                            .collection('userData')
-                            .doc(`${currentUser.uid}`)
-                            .collection('userVehicles')
-                            .doc(vehicle.id)
-                            .update({
-                                primary: vehicle.primary
-                            })
+                        await editVehicle(currentUser.uid, vehicle)
                     } catch (error) {
                         console.log(error)
                     }
@@ -131,25 +118,22 @@ const Vehicles = ({ navigation }) => {
             }
         })
         dispatch({ type: 'setUserVehicles', payload: vehicles })
+        dispatch({ type: 'setCurrentVehicle', payload: vehicles.filter(v => v.id === id)[0] })
     }
 
     const handleDeleteVehicle = async (id) => {
         var newPrimary = false;
-        const deleteVehicle = state.userVehicles.filter(v => v.id === id)
-        if (deleteVehicle[0].primary) {
+        const vehicleToDelete = state.userVehicles.filter(v => v.id === id)
+        if (vehicleToDelete[0].primary) {
             newPrimary = true;
         }
         const vehicles = state.userVehicles.filter(v => v.id !== id)
-        if (newPrimary && vehicles.length > 0) {
-            vehicles[0].primary = true;
-        }
         try {
-            await firestore()
-                .collection('userData')
-                .doc(`${currentUser.uid}`)
-                .collection('userVehicles')
-                .doc(id)
-                .delete()
+            if (newPrimary && vehicles.length > 0) {
+                vehicles[0].primary = true;
+                await editVehicle(currentUser.uid, vehicles[0])
+            }
+            await deleteVehicle(currentUser.uid, id)
         } catch (error) {
             console.log(error)
         }

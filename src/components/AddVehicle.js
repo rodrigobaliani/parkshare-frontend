@@ -5,6 +5,7 @@ import TopHeader from './TopHeader';
 import firestore from '@react-native-firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
 import { useStore } from '../contexts/StoreContext';
+import { addVehicle } from '../controllers/vehicleController';
 
 
 const AddVehicle = ({ navigation }) => {
@@ -26,25 +27,16 @@ const AddVehicle = ({ navigation }) => {
 
     const handleAddButtonPress = async () => {
         const vehicles = state.userVehicles
-        var vehicle = {
+        const vehicle = {
             brand: carBrands[brand.row].type,
             model: model,
             primary: vehicles.length === 0 ? true : false,
             color: color,
             licensePlate: licensePlate
         }
-        console.log(vehicle)
         try {
-            const docRef = await firestore()
-                .collection('userData')
-                .doc(`${currentUser.uid}`)
-                .collection('userVehicles')
-                .add(vehicle)
-            vehicle = {
-                id: docRef.id,
-                ...vehicle
-            }
-            vehicles.push(vehicle)
+            const newVehicle = await addVehicle(currentUser.uid, vehicle)
+            vehicles.push(newVehicle)
             dispatch({ type: 'setUserVehicles', payload: vehicles })
             navigation.goBack();
         } catch (error) {
