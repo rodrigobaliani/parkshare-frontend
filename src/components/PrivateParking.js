@@ -50,7 +50,7 @@ const PrivateParking = ({ navigation }) => {
                 size='small'
                 onPress={() => setVisibleModal(false)}
             >
-                Cerrar1
+                Cerrar
             </Button>
         </View>
     );
@@ -112,23 +112,24 @@ const PrivateParking = ({ navigation }) => {
 
     };
 
-    useEffect(async () => {
-        await handleLocationButtonPress();
-        const unsubscribe =
-            (await firestore()
-            .collection('privateParkings').get())
-            .forEach((doc) => {
-                        const parking = {
-                            id: doc.id,
-                            ...doc.data()
-                        }
-                        if(!state.privateParkings.find(auxParking => auxParking.id == parking.id)){    
-                            state.privateParkings = [...state.privateParkings, parking];
-                        }
+useEffect(async () => {
+    await handleLocationButtonPress();
+    let privatePark = [];
+    const unsubscribe =
+        (await firestore()
+        .collection('privateParkings').get())
+        .forEach((doc) => {
+                    const parking = {
+                        id: doc.id,
+                        ...doc.data()
                     }
-                );
-        return () => unsubscribe();
-    }, [currentUser]); 
+                        privatePark.push(parking);
+                    
+                }
+            );
+            dispatch({ type: "privateParkings", payload: privatePark })
+    return () => unsubscribe();
+}, [currentUser]); 
 
 
     const handleLocationButtonPress = async () => { 
@@ -233,7 +234,6 @@ const PrivateParking = ({ navigation }) => {
             </MapView>
             <TopMenu showMenu={() => navigation.toggleDrawer()} />
             <Button style={styles.locationButton} appearance='filled' status='primary' accessoryLeft={renderLocationIcon} onPress={() => handleLocationButtonPress()} />
-            <Button style={styles.addButton} appearance='filled' status='primary' accessoryLeft={renderAddIcon} onPress={() => test()} />
             <SnackBar
                 visible={message.length > 0}
                 textMessage={message}
