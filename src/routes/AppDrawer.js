@@ -55,12 +55,12 @@ export default function AppDrawer() {
     const DrawerContent = ({ navigation, state }) => (
         <Drawer
             selectedIndex={new IndexPath(state.index)}
-            onSelect={index => index.row < 4 ? navigation.navigate(state.routeNames[index.row]) : null}>
+            onSelect={index => index.row < 5 ? navigation.navigate(state.routeNames[index.row]) : null}>
             <DrawerItem title='Home' accessoryLeft={renderHomeIcon} />
-            <DrawerItem title='PrivateParking' accessoryLeft={renderHomeIcon} />
             <DrawerItem title='Metodos de Pago' accessoryLeft={renderPaymentIcon} />
             <DrawerItem title='Vehículos' accessoryLeft={renderCarIcon} />
             <DrawerItem title='Historial' accessoryLeft={renderHistoryIcon} />
+            <DrawerItem title='Estacionamientos Privados' accessoryLeft={renderHomeIcon} />
             <DrawerItem title='Cerrar Sesión' accessoryLeft={renderSignOutIcon} onPress={() => signOutUser()} />
         </Drawer>
     );
@@ -68,10 +68,10 @@ export default function AppDrawer() {
     return (
         <Navigator drawerContent={props => <DrawerContent {...props} />}>
             <Screen name='Home' component={Home} />
-            <Screen name='PrivateParking' component={PrivateParking} />
             <Screen name='PaymentMethods' component={PaymentMethods} />
             <Screen name='Vehicles' component={Vehicles} />
             <Screen name='History' component={History} />
+            <Screen name='PrivateParking' component={PrivateParking} />
             <Screen name='AddPaymentMethod' component={AddPaymentMethod} />
             <Screen name='AddVehicle' component={AddVehicle} />
             <Screen name='AddParking' component={AddParking} />
