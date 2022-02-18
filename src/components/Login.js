@@ -32,6 +32,7 @@ const Login = ({ navigation }) => {
         } catch (error) {
             const errorMessage = getFirebaseErrorMessage(error.code)
             alert(errorMessage)
+            console.log(error)
         }
     }
 

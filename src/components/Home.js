@@ -9,6 +9,7 @@ import TopMenu from './TopMenu';
 import { useStore } from '../contexts/StoreContext';
 import firestore from '@react-native-firebase/firestore';
 import moment from 'moment'
+import * as env from "../../config"
 
 const Home = ({ navigation }) => {
 
@@ -83,7 +84,7 @@ const Home = ({ navigation }) => {
     const setConfirmParkingData = async (lat1, lng1, lat2, lng2) => { // Pass Latitude & Longitude of both points as a parameter
         const urlToFetchDistance = 'https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins=' + lat1 + ',' + lng1
             + '&destinations=' + lat2 + '%2C' + lng2
-            + '&key=' + "AIzaSyBdTNWWsw0iktleWC1qKn3uVMmW-CfGqzQ";
+            + '&key=' + env.GOOGLE_API_KEY;
         try {
             let res = await fetch(urlToFetchDistance)
             res = await res.json();

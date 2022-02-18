@@ -16,6 +16,7 @@ import Vehicles from '../components/Vehicles';
 import AddVehicle from '../components/AddVehicle';
 import PrivateParking from '../components/PrivateParking';
 import History from '../components/History';
+import ParkingInstructions from '../components/ParkingInstructions';
 
 const { Navigator, Screen } = createDrawerNavigator();
 
@@ -55,12 +56,13 @@ export default function AppDrawer() {
     const DrawerContent = ({ navigation, state }) => (
         <Drawer
             selectedIndex={new IndexPath(state.index)}
-            onSelect={index => index.row < 5 ? navigation.navigate(state.routeNames[index.row]) : null}>
+            onSelect={index => index.row < 6 ? navigation.navigate(state.routeNames[index.row]) : null}>
             <DrawerItem title='Home' accessoryLeft={renderHomeIcon} />
             <DrawerItem title='Metodos de Pago' accessoryLeft={renderPaymentIcon} />
             <DrawerItem title='Vehículos' accessoryLeft={renderCarIcon} />
             <DrawerItem title='Historial' accessoryLeft={renderHistoryIcon} />
             <DrawerItem title='Estacionamientos Privados' accessoryLeft={renderHomeIcon} />
+            <DrawerItem title='Indicaciones de Estacionamiento' accessoryLeft={renderHomeIcon} />
             <DrawerItem title='Cerrar Sesión' accessoryLeft={renderSignOutIcon} onPress={() => signOutUser()} />
         </Drawer>
     );
@@ -72,6 +74,7 @@ export default function AppDrawer() {
             <Screen name='Vehicles' component={Vehicles} />
             <Screen name='History' component={History} />
             <Screen name='PrivateParking' component={PrivateParking} />
+            <Screen name='ParkingInstructions' component={ParkingInstructions} />
             <Screen name='AddPaymentMethod' component={AddPaymentMethod} />
             <Screen name='AddVehicle' component={AddVehicle} />
             <Screen name='AddParking' component={AddParking} />

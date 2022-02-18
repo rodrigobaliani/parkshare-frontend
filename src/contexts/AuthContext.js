@@ -11,7 +11,7 @@ export function useAuth() {
 }
 
 GoogleSignin.configure({
-    webClientId: '841200999064-1dqu7ut22543otu9qd3lj897aev8jfq1.apps.googleusercontent.com'
+    webClientId: '318604435769-9sd20lovb5k8th6p9if3sl0ps7a2gkm2.apps.googleusercontent.com',
 });
 
 export function AuthProvider({ children }) {
@@ -32,10 +32,10 @@ export function AuthProvider({ children }) {
 
     async function signInWithGoogle() {
         // Get the users ID token
-        const { idToken } = await GoogleSignin.signIn();
+        const { idToken, accessToken } = await GoogleSignin.signIn();
 
         // Create a Google credential with the token
-        const googleCredential = auth.GoogleAuthProvider.credential(idToken);
+        const googleCredential = auth.GoogleAuthProvider.credential(idToken, accessToken);
 
         // Sign-in the user with the credential
         return auth().signInWithCredential(googleCredential);

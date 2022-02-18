@@ -14,6 +14,7 @@ import moment from 'moment'
 import MapViewDirections from 'react-native-maps-directions';
 import TopMenu from './TopMenu';
 import { editColabParking } from '../controllers/colabParkingController';
+import * as env from "../../config"
 
 const CandidateGoing = ({ navigation, route }) => {
 
@@ -40,7 +41,7 @@ const CandidateGoing = ({ navigation, route }) => {
                 setCurrentTimestamp(position.timestamp);
                 const urlToFetchDistance = 'https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins=' + position.coords.latitude + ',' + position.coords.longitude
                     + '&destinations=' + state.currentParking.hostLat + '%2C' + state.currentParking.hostLng
-                    + '&key=' + "AIzaSyBdTNWWsw0iktleWC1qKn3uVMmW-CfGqzQ";
+                    + '&key=' + env.GOOGLE_API_KEY;
                 try {
                     let res = await fetch(urlToFetchDistance)
                     res = await res.json();
@@ -194,7 +195,7 @@ const CandidateGoing = ({ navigation, route }) => {
                                 latitude: state.currentParking.hostLat,
                                 longitude: state.currentParking.hostLng
                             }}
-                            apikey="AIzaSyBdTNWWsw0iktleWC1qKn3uVMmW-CfGqzQ"
+                            apikey={env.GOOGLE_API_KEY}
                             strokeWidth={4}
                             strokeColor="#111111"
                         />

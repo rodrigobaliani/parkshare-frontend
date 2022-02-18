@@ -10,7 +10,7 @@ import { useStore } from '../contexts/StoreContext';
 import firestore from '@react-native-firebase/firestore';
 import moment from 'moment'
 import { addColabParking } from '../controllers/colabParkingController';
-
+import * as env from "../../config"
 
 
 const AddParking = ({ navigation }) => {
@@ -187,7 +187,7 @@ const AddParking = ({ navigation }) => {
                             })
                         }}
                         query={{
-                            key: 'AIzaSyBdTNWWsw0iktleWC1qKn3uVMmW-CfGqzQ',
+                            key: env.GOOGLE_API_KEY,
                             language: 'en',
                         }}
                         fetchDetails={true}

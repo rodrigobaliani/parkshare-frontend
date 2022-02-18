@@ -14,6 +14,7 @@ import moment from 'moment'
 import MapViewDirections from 'react-native-maps-directions';
 import TopMenu from './TopMenu';
 import { editColabParking } from '../controllers/colabParkingController';
+import * as env from "../../config"
 
 const HostGoing = ({ navigation, route }) => {
 
@@ -126,7 +127,7 @@ const HostGoing = ({ navigation, route }) => {
                             latitude: state.hostInitialData.hostLat,
                             longitude: state.hostInitialData.hostLng,
                         }}
-                        apikey="AIzaSyBdTNWWsw0iktleWC1qKn3uVMmW-CfGqzQ"
+                        apikey={env.GOOGLE_API_KEY}
                         strokeWidth={4}
                         strokeColor="#111111"
                     />
