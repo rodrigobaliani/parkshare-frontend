@@ -19,7 +19,7 @@ const Home = ({ navigation }) => {
         latitudeDelta: 0.015,
         longitudeDelta: 0.0121,
     }
-
+    
     const [message, setMessage] = useState('')
     const [error, setError] = useState('')
     const { currentUser } = useAuth();
