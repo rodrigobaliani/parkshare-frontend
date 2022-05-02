@@ -14,8 +14,7 @@ import TopMenu from './TopMenu';
 import { useStore } from '../contexts/StoreContext';
 import firestore from '@react-native-firebase/firestore';
 import moment from 'moment';
-import { getParkingInstructions1, getParkingInstructions2, getParkingInstructions3, getParkingInstructions4 } from '../controllers/parkingInstructionsController';
-import bar from '../assets/estacionamiento_via_publica.json';
+import { getParkingInstructions } from '../controllers/parkingInstructionsController';
 
 const ParkingInstructions = ({ navigation }) => {
   const initialLocation = {
@@ -37,14 +36,10 @@ const ParkingInstructions = ({ navigation }) => {
     parkingId: '',
   });
   const [visibleModal, setVisibleModal] = useState(false);
-  const [geojsonFeatures1, setGeojsonFeatures1] = useState([]);
-  const [geojsonLoaded1, setGeojsonLoaded1] = useState(false);
-  const [geojsonFeatures2, setGeojsonFeatures2] = useState([]);
-  const [geojsonLoaded2, setGeojsonLoaded2] = useState(false);
-  const [geojsonFeatures3, setGeojsonFeatures3] = useState([]);
-  const [geojsonLoaded3, setGeojsonLoaded3] = useState(false);
-  const [geojsonFeatures4, setGeojsonFeatures4] = useState([]);
-  const [geojsonLoaded4, setGeojsonLoaded4] = useState(false);
+  const [geojsonAllowedFeatures, setGeojsonAllowedFeatures] = useState([]);
+  const [geojsonAllowedLoaded, setGeojsonAllowedLoaded] = useState(false);
+  const [geojsonForbiddenFeatures, setGeojsonForbiddenFeatures] = useState([]);
+  const [geojsonForbiddenLoaded, setGeojsonForbiddenLoaded] = useState(false);
   const { state, dispatch } = useStore();
   const mapRef = useRef();
 
@@ -76,35 +71,12 @@ const ParkingInstructions = ({ navigation }) => {
     try {
       await handleLocationButtonPress();
       //let geojsonChunk = [];
-      let data = await getParkingInstructions1(0, 1000);
-      setGeojsonFeatures1(data.result);
-      setGeojsonLoaded1(true);
-      let data2 = await getParkingInstructions2(0, 1000);
-      setGeojsonFeatures2(data2.result);
-      let data3 = await getParkingInstructions3(0, 1000);
-      setGeojsonFeatures2(data3.result);
-      let data4 = await getParkingInstructions3(0, 1000);
-      setGeojsonFeatures2(data4.result);
-      //setGeojsonLoaded2(true);
-      /*let counter = 0;
-            while(data.result.nextToIndex < 2001) {
-                geojsonChunk.push(setGeojsonFeatures(geojsonChunk)geojson)
-               counter += 1000
-                console.log(counter)
-                if(counter >= 5000) {
-                    nextGeojson = geojsonFeatures.concat(geojsonChunk)
-                    setGeojsonFeatures(nextGeojson)
-                    counter = 0;
-                }
-                console.log(geojsonFeatures)
-                setGeojsonFeatures(geojsonChunk)
-                data = await getParkingInstructions(data.result.nextFromIndex, data.result.nextToIndex);
-            }
-
-            setGeojsonLoaded(true)
-            geojsonFeatures.map(f => {
-                console.log(f)
-            })*/
+      let dataAllowed = await getParkingInstructions("allowed");
+      setGeojsonAllowedFeatures(dataAllowed.result);
+      setGeojsonAllowedLoaded(true);
+      let dataForbidden = await getParkingInstructions("forbidden");
+      setGeojsonForbiddenFeatures(dataForbidden.result);
+      setGeojsonForbiddenLoaded(true);
     } catch (error) {
       console.log(error);
     }
@@ -178,43 +150,19 @@ const ParkingInstructions = ({ navigation }) => {
         onRegionChangeComplete={(region) => setMapRegion(region)}
         ref={mapRef}
       >
-        {/*testData.map(i => {
-                <Polyline
-                coordinates={getPolylineCoords(i.geometry.coordinates)}
-                strokeColor="green"
-                fillColor="green"
-                strokeWidth={2}
-            />
-            })*/}
-        {geojsonLoaded1 && geojsonFeatures1 && (
+        {geojsonAllowedLoaded && geojsonAllowedFeatures && (
           <Geojson
-            geojson={geojsonFeatures1}
+            geojson={geojsonAllowedFeatures}
             strokeColor='green'
             fillColor='green'
             strokeWidth={2}
           />
         )}
-        {geojsonLoaded2 && geojsonFeatures2 && (
+        {geojsonForbiddenLoaded && geojsonForbiddenFeatures && (
           <Geojson
-            geojson={geojsonFeatures2}
-            strokeColor='green'
-            fillColor='green'
-            strokeWidth={2}
-          />
-        )}
-        {geojsonLoaded3 && geojsonFeatures3 && (
-          <Geojson
-            geojson={geojsonFeatures3}
-            strokeColor='green'
-            fillColor='green'
-            strokeWidth={2}
-          />
-        )}
-        {geojsonLoaded4 && geojsonFeatures4 && (
-          <Geojson
-            geojson={geojsonFeatures4}
-            strokeColor='green'
-            fillColor='green'
+            geojson={geojsonForbiddenFeatures}
+            strokeColor='red'
+            fillColor='red'
             strokeWidth={2}
           />
         )}
