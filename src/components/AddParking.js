@@ -7,7 +7,6 @@ import Geolocation from '@react-native-community/geolocation';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import { LogBox } from 'react-native';
 import { useStore } from '../contexts/StoreContext';
-import CurrencyInput from 'react-native-currency-input';
 import firestore from '@react-native-firebase/firestore';
 import moment from 'moment'
 import { addColabParking } from '../controllers/colabParkingController';
