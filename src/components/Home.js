@@ -24,7 +24,7 @@ const Home = ({ navigation }) => {
     const [error, setError] = useState('')
     const { currentUser } = useAuth();
     const [mapRegion, setMapRegion] = useState(initialLocation)
-    const [modalInfo, setModalInfo] = useState({ carBrand: '', carModel: '', carPlate: '', expiryTime: '', parkingId: '' })
+    const [modalInfo, setModalInfo] = useState({ carBrand: '', carModel: '', carPlate: '', expiryTime: '', parkingId: '', parkingPrice: '' })
     const [visibleModal, setVisibleModal] = useState(false)
     const { state, dispatch } = useStore();
     const mapRef = useRef();
@@ -199,6 +199,7 @@ const Home = ({ navigation }) => {
     }
 
     const getParkingInfo = (parkingId) => {
+        
         const parking = state.parkings.filter((doc) => doc.id === parkingId)
         const now = moment(firestore.Timestamp.now().toDate()); //todays date
         const end = moment(parking[0].expiryDate.toDate()); // another date
@@ -210,7 +211,8 @@ const Home = ({ navigation }) => {
             carModel: parking[0].hostVehicle.model,
             carPlate: parking[0].hostVehicle.licensePlate,
             expiryTime: expiryTime,
-            parkingId: parkingId
+            parkingId: parkingId,
+            parkingPrice: parking[0].price
         })
         setVisibleModal(true)
     }
@@ -270,9 +272,12 @@ const Home = ({ navigation }) => {
                     onBackdropPress={() => setVisibleModal(false)}
                 >
                     <Card style={styles.card} header={cardHeader} footer={cardFooter}>
-                        <Text>
+                        <Text category='h6' style={{textAlign: 'center'}}>
                             Se va en aproximadamente {modalInfo.expiryTime} minutos
                         </Text>
+                    
+                         <Text category='h6' style={{ marginTop: 30, marginBottom: 30, textAlign: 'center'}}>Precio: AR$ {modalInfo.parkingPrice}</Text>
+                        
                     </Card>
                 </Modal>
             </MapView>

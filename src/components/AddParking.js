@@ -7,6 +7,7 @@ import Geolocation from '@react-native-community/geolocation';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import { LogBox } from 'react-native';
 import { useStore } from '../contexts/StoreContext';
+import CurrencyInput from 'react-native-currency-input';
 import firestore from '@react-native-firebase/firestore';
 import moment from 'moment'
 import { addColabParking } from '../controllers/colabParkingController';
@@ -35,6 +36,7 @@ const AddParking = ({ navigation }) => {
     const [parkingTime, setParkingTime] = useState(new IndexPath(0));
     const [vehicle, setVehicle] = useState({})
     const mapRef = useRef();
+    const [currency, setCurrency] = useState()
 
     useEffect(async () => {
         await handleLocationButtonPress();
@@ -108,7 +110,8 @@ const AddParking = ({ navigation }) => {
             hostUser: currentUser.uid,
             hostVehicle: state.currentVehicle,
             candidateUser: '',
-            status: '0'
+            status: '0',
+            price: currency
         }
         firestore()
             .collection('parkings')
@@ -178,7 +181,6 @@ const AddParking = ({ navigation }) => {
                 <ScrollView style={styles.form} keyboardShouldPersistTaps='always'>
                     <GooglePlacesAutocomplete
                         style={styles.searchBar}
-                        placeholder='Search'
                         onPress={(data, details = null) => {
                             setMapRegion({
                                 ...mapRegion,
@@ -203,6 +205,16 @@ const AddParking = ({ navigation }) => {
                         }}
                         placeholder="Ingrese la dirección"
                     />
+                    <View style={styles.inputContainer}>
+                        <Text style={styles.prefix}>AR$</Text>
+                        <Input
+                            
+                            label="Ingrese precio a recibir por el lugar:"
+                            keyboardType="numeric"
+                            autoComplete="cc-exp"
+                            onChangeText={(value) => setCurrency(value)}
+                        />
+                    </View> 
                     <Select
                         style={styles.formElement}
                         selectedIndex={parkingTime}
@@ -226,9 +238,6 @@ const AddParking = ({ navigation }) => {
                             CAMBIAR
                         </Button>
                     </View>
-                    <Text style={styles.textElement} category='h6'>
-                        Ganancia: $50
-                    </Text>
                     <View style={styles.buttonContainer}>
                         <Button
                             style={styles.formElement}
@@ -240,7 +249,7 @@ const AddParking = ({ navigation }) => {
                         <Button
                             style={styles.formElement}
                             size='medium'
-                            onPress={() => handleAddParking()}
+                             onPress={() => handleAddParking()}
                         >
                             AGREGAR
                         </Button>
@@ -297,6 +306,17 @@ const styles = StyleSheet.create({
         lineHeight: 50,
         borderRadius: 50,
     },
+    inputContainer: {
+        flexDirection: 'row',
+        marginHorizontal: 10,
+        borderRadius: 10,
+        marginTop: 20,
+        alignItems: "center"
+      },
+    prefix: {
+        marginTop: 18,
+        paddingHorizontal: 10,
+    }
 
 });
 
