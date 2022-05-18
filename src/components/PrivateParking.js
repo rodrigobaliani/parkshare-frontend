@@ -210,7 +210,7 @@ useEffect(async () => {
                                     coordinate={{ latitude: location.lat, longitude: location.lng }}
                                     onPress={(e) => getParkingInfo(e._dispatchInstances.memoizedProps.parkingId)}>
                                     <Image
-                                        source={require('../assets/marker.png')}
+                                        source={require('../assets/marker-blue.png')}
                                         style={{ width: 26, height: 28 }}
                                         resizeMode="center"
                                     />

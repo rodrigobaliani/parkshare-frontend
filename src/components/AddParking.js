@@ -262,12 +262,12 @@ const AddParking = ({ navigation }) => {
 const styles = StyleSheet.create({
     map: {
         ...StyleSheet.absoluteFillObject,
-        height: "50%"
+        height: "40%"
     },
     container: {
-        top: "50%",
+        top: "40%",
         flex: 1,
-        height: "50%"
+        height: "60%"
     },
     vehicleContainer: {
         flexDirection: 'row',

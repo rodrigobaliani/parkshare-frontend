@@ -25,6 +25,7 @@ const History = ({ navigation }) => {
     );
 
     const handleRateButtonPress = (parkingId) => {
+        console.log("Test")
         selectedTab === 0 ?
             navigation.navigate('HostRate', { mode: '1', parkingId: parkingId, afterRate: true })
             :
@@ -50,7 +51,7 @@ const History = ({ navigation }) => {
                                 :
                                 <Button
                                     size='small'
-                                    onPress={() => handleRateButtonPress(info.item.id)}
+                                    //onPress={handleRateButtonPress(info.item.id)}
                                     appearance='ghost'
                                     status='control'
                                 >
@@ -77,7 +78,7 @@ const History = ({ navigation }) => {
                                 :
                                 <Button
                                     size='small'
-                                    onPress={handleRateButtonPress('candidate')}
+                                    //onPress={handleRateButtonPress(info.item.id)}
                                     appearance='ghost'
                                     status='control'
                                 >
