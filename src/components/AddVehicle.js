@@ -6,6 +6,7 @@ import firestore from '@react-native-firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
 import { useStore } from '../contexts/StoreContext';
 import { addVehicle } from '../controllers/vehicleController';
+import SnackBar from 'react-native-snackbar-component';
 
 
 const AddVehicle = ({ navigation }) => {
@@ -18,6 +19,7 @@ const AddVehicle = ({ navigation }) => {
     const [model, setModel] = useState('');
     const [licensePlate, setLicensePlate] = useState('');
     const [color, setColor] = useState('');
+    const [error, setError] = useState('');
 
     const carBrands = [
         { type: 'Volkswagen', label: 'Volkswagen' },
@@ -26,23 +28,53 @@ const AddVehicle = ({ navigation }) => {
 
 
     const handleAddButtonPress = async () => {
-        const vehicles = state.userVehicles
-        const vehicle = {
-            brand: carBrands[brand.row].type,
-            model: model,
-            primary: vehicles.length === 0 ? true : false,
-            color: color,
-            licensePlate: licensePlate
-        }
-        try {
-            const newVehicle = await addVehicle(currentUser.uid, vehicle)
-            vehicles.push(newVehicle)
-            dispatch({ type: 'setUserVehicles', payload: vehicles })
-            navigation.goBack();
-        } catch (error) {
-            console.log(error)
+        const validation = validateCarData()
+        if (validation) {
+            const vehicles = state.userVehicles
+            const vehicle = {
+                brand: carBrands[brand.row].type,
+                model: model,
+                primary: vehicles.length === 0 ? true : false,
+                color: color,
+                licensePlate: licensePlate
+            }
+            try {
+                const newVehicle = await addVehicle(currentUser.uid, vehicle)
+                vehicles.push(newVehicle)
+                dispatch({ type: 'setUserVehicles', payload: vehicles })
+                navigation.goBack();
+            } catch (error) {
+                console.log(error)
+            }
         }
     };
+
+    const validateCarData = () => {
+        let result = true;
+        let errorMessage = '';
+        if(licensePlate.length === 0) {
+            result = false;
+            errorMessage = addErrorToMessage(errorMessage, "Debe completar la patente del vehículo")
+        }
+        if(model.length === 0) {
+            result = false;
+            errorMessage = addErrorToMessage(errorMessage, "Debe completar el modelo del vehículo")
+        }
+        if(color.length === 0) {
+            result = false;
+            errorMessage = addErrorToMessage(errorMessage, "Debe completar el color del vehículo")
+        }
+        if(!result) {
+            setError(errorMessage)
+        }
+        return result;
+    }
+
+    const addErrorToMessage = (msg, error) => {
+        if(msg.length === 0) 
+            return msg + error;
+        else return msg + '\n\n' + error;
+    }
 
     return (
         <KeyboardAvoidingView
@@ -75,7 +107,7 @@ const AddVehicle = ({ navigation }) => {
                 <Input
                     style={styles.input}
                     label='PATENTE'
-                    placeholder='AA-1234-BB'
+                    placeholder='AA-123-BB'
                     value={licensePlate}
                     onChangeText={setLicensePlate}
                 />
@@ -94,6 +126,14 @@ const AddVehicle = ({ navigation }) => {
                 onPress={handleAddButtonPress}>
                 AGREGAR VEHÍCULO
             </Button>
+            <SnackBar
+                visible={error.length > 0}
+                textMessage={error}
+                actionHandler={() => { setError('') }}
+                actionText="OK"
+                backgroundColor='#990000'
+                accentColor='#ffffff'
+            />
         </KeyboardAvoidingView>
     );
 };

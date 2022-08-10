@@ -56,7 +56,7 @@ const Login = ({ navigation }) => {
 
     return (
         <KeyboardAvoidingView>
-            <ImageOverlay source={{ uri: "https://somethingoffreedom.com/wp-content/uploads/2017/09/Obelisk-Buenos-Aires-Sights.jpg" }} height={660} contentPosition="bottom">
+            <ImageOverlay source={{ uri: "https://somethingoffreedom.com/wp-content/uploads/2017/09/Obelisk-Buenos-Aires-Sights.jpg" }} height={'100%'} contentPosition="bottom">
                 <React.Fragment>
                     <View style={styles.container}>
                         <View style={styles.headerContainer}>

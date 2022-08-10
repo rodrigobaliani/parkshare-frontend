@@ -10,6 +10,7 @@ import { useStore } from '../contexts/StoreContext';
 import firestore from '@react-native-firebase/firestore';
 import moment from 'moment'
 import { addColabParking } from '../controllers/colabParkingController';
+import SnackBar from 'react-native-snackbar-component'
 import * as env from "../../config"
 
 
@@ -33,9 +34,11 @@ const AddParking = ({ navigation }) => {
     const { currentUser } = useAuth();
     const [mapRegion, setMapRegion] = useState(initialLocation);
     const [parkingTime, setParkingTime] = useState(new IndexPath(0));
-    const [vehicle, setVehicle] = useState({})
+    const [vehicle, setVehicle] = useState({});
     const mapRef = useRef();
-    const [currency, setCurrency] = useState()
+    const [currency, setCurrency] = useState(0);
+    const [error, setError] = useState('');
+    const [currencyStatus, setCurrencyStatus] = useState('basic');
 
     useEffect(async () => {
         await handleLocationButtonPress();
@@ -99,39 +102,66 @@ const AddParking = ({ navigation }) => {
     };
 
     const handleAddParking = async () => {
-        const now = new Date()
-        const expiryDate = new Date(now.getTime() + timeOptions[parkingTime.row].time * 60000);
-        const parking = {
-            lat: mapRegion.latitude,
-            lng: mapRegion.longitude,
-            creationDate: firestore.FieldValue.serverTimestamp(),
-            expiryDate: firestore.Timestamp.fromDate(expiryDate),
-            hostUser: currentUser.uid,
-            hostVehicle: state.currentVehicle,
-            candidateUser: '',
-            status: '0',
-            price: currency
+        const validateData = validateParkingForm();
+        console.log(validateData)
+        if (validateData) {
+            const now = new Date()
+            const expiryDate = new Date(now.getTime() + timeOptions[parkingTime.row].time * 60000);
+            const parking = {
+                lat: mapRegion.latitude,
+                lng: mapRegion.longitude,
+                creationDate: firestore.FieldValue.serverTimestamp(),
+                expiryDate: firestore.Timestamp.fromDate(expiryDate),
+                hostUser: currentUser.uid,
+                hostVehicle: state.currentVehicle,
+                candidateUser: '',
+                status: '0',
+                price: currency
+            }
+            firestore()
+                .collection('parkings')
+                .add(parking)
+                .then((docRef) => {
+                    console.log("Parking added: " + JSON.stringify(parking));
+                    const stateParking = {
+                        id: docRef.id,
+                        ...parking
+                    }
+                    dispatch({ type: "addParking", payload: stateParking })
+                    navigation.navigate("HostWaiting", { parkingId: docRef.id })
+                });
         }
-        firestore()
-            .collection('parkings')
-            .add(parking)
-            .then((docRef) => {
-                console.log("Parking added: " + JSON.stringify(parking));
-                const stateParking = {
-                    id: docRef.id,
-                    ...parking
-                }
-                dispatch({ type: "addParking", payload: stateParking })
-                navigation.navigate("HostWaiting", { parkingId: docRef.id })
-            });
-        /*const docRef = await addColabParking(parking);
-        console.log(docRef)
-        const stateParking = {
-            id: docRef.id,
-            ...docRef
+    }
+
+    const validateParkingForm = () => {
+        let result = true;
+        setCurrencyStatus('basic')
+        if (!mapRegion.latitude || !mapRegion.longitude) {
+            setError('Debe definir la ubicación del estacionamiento')
+            result = false;
         }
-        dispatch({ type: "addParking", payload: stateParking })
-        navigation.navigate("HostWaiting", { parkingId: docRef.id })*/
+        if (!timeOptions[parkingTime.row].time) {
+            setError('Debe definir cuando estará disponible el estacionamiento')
+            result = false;
+        }
+        if (!currency) {
+            setError('Debe definir el precio del estacionamiento')
+            setCurrencyStatus('danger')
+            result = false;
+        }
+        else {
+            if(currency <= 0) {
+                setError('El precio del estacionamiento debe ser mayor a 0')
+                setCurrencyStatus('danger')
+                result = false;
+            }
+            else if(currency % 1 !== 0) {
+                setError('El precio del estacionamiento no puede contener centavos')
+                setCurrencyStatus('danger')
+                result = false;
+            }
+        }
+        return result;
     }
 
     return (
@@ -207,13 +237,14 @@ const AddParking = ({ navigation }) => {
                     <View style={styles.inputContainer}>
                         <Text style={styles.prefix}>AR$</Text>
                         <Input
-                            
                             label="Ingrese precio a recibir por el lugar:"
                             keyboardType="numeric"
                             autoComplete="cc-exp"
+                            value={currency}
+                            status = {currencyStatus}
                             onChangeText={(value) => setCurrency(value)}
                         />
-                    </View> 
+                    </View>
                     <Select
                         style={styles.formElement}
                         selectedIndex={parkingTime}
@@ -248,13 +279,22 @@ const AddParking = ({ navigation }) => {
                         <Button
                             style={styles.formElement}
                             size='medium'
-                             onPress={() => handleAddParking()}
+                            onPress={() => handleAddParking()}
                         >
                             AGREGAR
                         </Button>
                     </View>
                 </ScrollView>
             </View>
+            <SnackBar
+                visible={error.length > 0}
+                textMessage={error}
+                actionHandler={() => { setError('') }}
+                actionText="OK"
+                backgroundColor='#990000'
+                accentColor='#ffffff'
+                autoHidingTime={5000}
+            />
         </React.Fragment>
     )
 }
@@ -311,7 +351,7 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         marginTop: 20,
         alignItems: "center"
-      },
+    },
     prefix: {
         marginTop: 18,
         paddingHorizontal: 10,

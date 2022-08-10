@@ -14,7 +14,6 @@ const HostWaiting = ({ navigation, route }) => {
     let unsubscribe = {};
 
     const onSnapshot = useCallback(async (documentSnapshot) => {
-        const doc = documentSnapshot.data()
         if (doc.candidateUser !== '' && doc.status === '1') {
             const initialLocation = {
                 candidateLat: doc.candidateTripInfo.lat,
