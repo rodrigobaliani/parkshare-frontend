@@ -1,41 +1,33 @@
 {
   "project_info": {
-    "project_number": "318604435769",
-    "project_id": "durable-boulder-341700",
-    "storage_bucket": "durable-boulder-341700.appspot.com"
+    "project_number": "77708848820",
+    "project_id": "fine-bit-359022",
+    "storage_bucket": "fine-bit-359022.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:318604435769:android:a71046eee9416c3a4248e8",
+        "mobilesdk_app_id": "1:77708848820:android:64f023450fb419895df1e1",
         "android_client_info": {
           "package_name": "com.parksharefrontend"
         }
       },
       "oauth_client": [
         {
-          "client_id": "318604435769-lrtqaek8jusu12kalaetnr72mpqhs4ug.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.parksharefrontend",
-            "certificate_hash": "b47cc5949f5e8a184c29985207e805fe029fc516"
-          }
-        },
-        {
-          "client_id": "318604435769-9sd20lovb5k8th6p9if3sl0ps7a2gkm2.apps.googleusercontent.com",
+          "client_id": "77708848820-c7ubv188u678tlvi8iggk076k7kdbkqn.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyC0hE7Nl1xLuCWHdvmKvw_ggHyMqc-5Wdg"
+          "current_key": "AIzaSyDxo4r4AclVQOTCe78nByHC-7Z9kFC9GN0"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "318604435769-9sd20lovb5k8th6p9if3sl0ps7a2gkm2.apps.googleusercontent.com",
+              "client_id": "77708848820-c7ubv188u678tlvi8iggk076k7kdbkqn.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
