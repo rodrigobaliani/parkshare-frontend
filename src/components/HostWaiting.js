@@ -13,7 +13,7 @@ const HostWaiting = ({ navigation, route }) => {
     const [waitingCandidate, setWaitingCandidate] = useState(true)
     let unsubscribe = {};
 
-    const onSnapshot = useCallback(async (documentSnapshot) => {
+    const onSnapshot = useCallback(async (doc) => {
         if (doc.candidateUser !== '' && doc.status === '1') {
             const initialLocation = {
                 candidateLat: doc.candidateTripInfo.lat,
@@ -34,7 +34,9 @@ const HostWaiting = ({ navigation, route }) => {
                     status: '2'
                 })*/
             setWaitingCandidate(false)
+            console.log("corre")
             dispatch({ type: "setHostInitialData", payload: initialLocation })
+            console.log("corre2")
             navigation.navigate('HostGoing', { parkingId: parkingId })
             unsubscribe();
         }
