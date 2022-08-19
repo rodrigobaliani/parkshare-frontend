@@ -11,7 +11,7 @@ export function useAuth() {
 }
 
 GoogleSignin.configure({
-    webClientId: '318604435769-9sd20lovb5k8th6p9if3sl0ps7a2gkm2.apps.googleusercontent.com',
+    webClientId: '77708848820-c7ubv188u678tlvi8iggk076k7kdbkqn.apps.googleusercontent.com',
 });
 
 export function AuthProvider({ children }) {
