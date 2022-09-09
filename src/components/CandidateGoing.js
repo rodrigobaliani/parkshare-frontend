@@ -31,7 +31,7 @@ const CandidateGoing = ({ navigation, route }) => {
     const { state, dispatch } = useStore();
     const { currentUser } = useAuth();
     const { parkingId } = route.params
-    let unsubscribe = {};
+    let unsubscribe;
 
     useEffect(() => {
         const watchId = Geolocation.watchPosition(
@@ -81,9 +81,17 @@ const CandidateGoing = ({ navigation, route }) => {
                             .collection('parkings')
                             .doc(parkingId)
                             .onSnapshot(async (documentSnapshot) => {
-                                if (documentSnapshot.data().status === '5') {
+                                console.log(documentSnapshot.data())
+                                if (documentSnapshot.data().status === '4') {
                                     dispatch({ type: "deleteParking", payload: parkingId })
                                     unsubscribe();
+                                    Geolocation.clearWatch(watchId)
+                                    navigation.navigate('CandidateRate', { mode: '2', parkingId: parkingId, afterRate: false })
+                                }
+                                else if (documentSnapshot.data().status === '5') {
+                                    dispatch({ type: "deleteParking", payload: parkingId })
+                                    unsubscribe();
+                                    Geolocation.clearWatch(watchId)
                                     navigation.navigate('CandidateRate', { mode: '1', parkingId: parkingId, afterRate: false })
                                 }
                                 else {
@@ -140,10 +148,9 @@ const CandidateGoing = ({ navigation, route }) => {
                 .doc(parkingId)
                 .update({
                     status: '4'
-                })*/
+                })
             dispatch({ type: "deleteParking", payload: parkingId })
-            navigation.navigate('CandidateRate', { mode: '2', parkingId: parkingId, afterRate: false })
-            unsubscribe();
+            navigation.navigate('CandidateRate', { mode: '2', parkingId: parkingId, afterRate: false })*/
         }
         catch (error) {
             console.log(error)

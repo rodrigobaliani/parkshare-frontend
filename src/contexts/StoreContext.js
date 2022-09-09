@@ -2,7 +2,7 @@ import React, { createContext, useContext, useReducer } from 'react';
 import firestore from '@react-native-firebase/firestore';
 
 const StoreContext = createContext();
-const initialState = { parkings: [], currentParking: {}, hostInitialData: {}, paymentMethods: [], userVehicles: [], currentVehicle: {}, privateParkings: [] };
+const initialState = { parkings: [], currentParking: {}, hostInitialData: {}, paymentMethods: [], userVehicles: [], currentVehicle: {}, privateParkings: [], hostCurrentParking: ''  };
 
 const reducer = (state, action) => {
     switch (action.type) {
@@ -15,7 +15,8 @@ const reducer = (state, action) => {
                 userVehicles: state.userVehicles,
                 privateParkings: state.privateParkings,
                 currentVehicle: state.currentVehicle,
-                currentPaymentMethod: state.currentPaymentMethod
+                currentPaymentMethod: state.currentPaymentMethod,
+                hostCurrentParking: state.hostCurrentParking
             }
 
         case "deleteParking":
@@ -27,7 +28,8 @@ const reducer = (state, action) => {
                 userVehicles: state.userVehicles,
                 privateParkings: state.privateParkings,
                 currentVehicle: state.currentVehicle,
-                currentPaymentMethod: state.currentPaymentMethod
+                currentPaymentMethod: state.currentPaymentMethod,
+                hostCurrentParking: state.hostCurrentParking
             }
         case "setCurrentParking":
             return {
@@ -38,7 +40,8 @@ const reducer = (state, action) => {
                 userVehicles: state.userVehicles,
                 privateParkings: state.privateParkings,
                 currentVehicle: state.currentVehicle,
-                currentPaymentMethod: state.currentPaymentMethod
+                currentPaymentMethod: state.currentPaymentMethod,
+                hostCurrentParking: state.hostCurrentParking
             }
         case "setHostInitialData":
             return {
@@ -49,7 +52,8 @@ const reducer = (state, action) => {
                 userVehicles: state.userVehicles,
                 privateParkings: state.privateParkings,
                 currentVehicle: state.currentVehicle,
-                currentPaymentMethod: state.currentPaymentMethod
+                currentPaymentMethod: state.currentPaymentMethod,
+                hostCurrentParking: state.hostCurrentParking
             }
         case "setPaymentMethods":
             return {
@@ -60,7 +64,8 @@ const reducer = (state, action) => {
                 userVehicles: state.userVehicles,
                 privateParkings: state.privateParkings,
                 currentVehicle: state.currentVehicle,
-                currentPaymentMethod: state.currentPaymentMethod
+                currentPaymentMethod: state.currentPaymentMethod,
+                hostCurrentParking: state.hostCurrentParking
             }
         case "setUserVehicles":
             return {
@@ -73,6 +78,7 @@ const reducer = (state, action) => {
                 currentVehicle: state.currentVehicle,
                 currentPaymentMethod: state.currentPaymentMethod,
                 privateParkings: state.privateParkings,
+                hostCurrentParking: state.hostCurrentParking
             }
         case "privateParkings":
             return {
@@ -83,7 +89,8 @@ const reducer = (state, action) => {
                 userVehicles: state.userVehicles,
                 currentVehicle: state.currentVehicle,
                 currentPaymentMethod: state.currentPaymentMethod,
-                privateParkings: action.payload
+                privateParkings: action.payload,
+                hostCurrentParking: state.hostCurrentParking,
 
             }
         case "setCurrentVehicle":
@@ -96,7 +103,8 @@ const reducer = (state, action) => {
                 userVehicles: state.userVehicles,
                 currentVehicle: action.payload,
                 currentPaymentMethod: state.currentPaymentMethod,
-                privateParkings: state.privateParkings
+                privateParkings: state.privateParkings,
+                hostCurrentParking: state.hostCurrentParking
             }
         case "setCurrentPaymentMethod":
             return {
@@ -109,7 +117,21 @@ const reducer = (state, action) => {
                 currentVehicle: state.currentVehicle,
                 currentPaymentMethod: action.payload,
                 privateParkings: state.privateParkings,
+                hostCurrentParking: state.hostCurrentParking
             }
+        case "setHostCurrentParking":
+            return {
+                currentPaymentMethod: action.payload,
+                currentParking: state.currentParking,
+                parkings: state.parkings,
+                hostInitialData: state.hostInitialData,
+                paymentMethods: state.paymentMethods,
+                userVehicles: state.userVehicles,
+                currentVehicle: state.currentVehicle,
+                currentPaymentMethod: state.currentPaymentMethod,
+                privateParkings: state.privateParkings,
+                hostCurrentParking: action.payload
+            }        
         default:
             throw new Error(`Unhandled action type: ${action.type}`);
     }

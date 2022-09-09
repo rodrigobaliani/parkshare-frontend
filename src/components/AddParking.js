@@ -12,6 +12,7 @@ import moment from 'moment'
 import { addColabParking } from '../controllers/colabParkingController';
 import SnackBar from 'react-native-snackbar-component'
 import * as env from "../../config"
+import { CommonActions } from '@react-navigation/native';
 
 
 const AddParking = ({ navigation }) => {
@@ -43,6 +44,9 @@ const AddParking = ({ navigation }) => {
     useEffect(async () => {
         await handleLocationButtonPress();
         try {
+            const unsubscribe = navigation.addListener('focus', () => {
+                setCurrency(0)
+            });
             const defaultVehicle = await firestore()
                 .collection('userData')
                 .doc(`${currentUser.uid}`)
@@ -50,7 +54,7 @@ const AddParking = ({ navigation }) => {
                 .where('primary', '==', true)
                 .get()
             dispatch({ type: 'setCurrentVehicle', payload: defaultVehicle.docs[0].data() })
-            console.log(state.currentVehicle)
+            return unsubscribe;
         } catch (error) {
             console.log(error)
         }
@@ -122,13 +126,15 @@ const AddParking = ({ navigation }) => {
                 .collection('parkings')
                 .add(parking)
                 .then((docRef) => {
-                    console.log("Parking added: " + JSON.stringify(parking));
                     const stateParking = {
                         id: docRef.id,
                         ...parking
                     }
+                    console.log("Id: "+ docRef.id)
+                    console.log("Parking added: " + JSON.stringify(stateParking));
                     dispatch({ type: "addParking", payload: stateParking })
-                    navigation.navigate("HostWaiting", { parkingId: docRef.id })
+                    dispatch({ type: "setHostCurrentParking", payload: docRef.id })
+                    navigation.navigate("HostWaiting")
                 });
         }
     }

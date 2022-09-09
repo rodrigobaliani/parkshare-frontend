@@ -154,7 +154,7 @@ const PaymentMethods = ({ navigation }) => {
         try {
             const paymentMethods = [];
             const paymentMethodsDb = await getUserPaymentMethods(currentUser.uid);
-            paymentMethodsDb.forEach((doc) => {
+            !paymentMethodsDb.isEmpty && paymentMethodsDb.forEach((doc) => {
                 const card = {
                     id: doc.id,
                     ...doc

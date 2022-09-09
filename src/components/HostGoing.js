@@ -32,10 +32,10 @@ const HostGoing = ({ navigation, route }) => {
     const { width, height } = Dimensions.get('window');
     const { state, dispatch } = useStore();
     const { currentUser } = useAuth();
-    const { parkingId } = route.params
-    let unsubscribe = {};
+    let unsubscribe;
 
     const onSnapshot = useCallback((documentSnapshot) => {
+        const parkingId = state.hostCurrentParking
         const data = documentSnapshot.data().candidateTripInfo;
         const status = documentSnapshot.data().status
         setCurrentLongitude(data.lng);
@@ -48,14 +48,20 @@ const HostGoing = ({ navigation, route }) => {
         if (status === '3') {
             setNearDestination(true)
         }
-        if (status === '4') {
+        else if (status === '4') {
             dispatch({ type: "deleteParking", payload: parkingId })
             navigation.navigate('HostRate', { mode: '1', parkingId: parkingId, afterRate: false })
-            unsubscribe()
+            unsubscribe();
+        }
+        else if (status === '5') {
+            dispatch({ type: "deleteParking", payload: parkingId })
+            navigation.navigate('HostRate', { mode: '2', parkingId: parkingId, afterRate: false })
+            unsubscribe();
         }
     })
 
     useEffect(() => {
+        const parkingId = state.hostCurrentParking
         unsubscribe = firestore()
             .collection('parkings')
             .doc(parkingId)
@@ -68,15 +74,16 @@ const HostGoing = ({ navigation, route }) => {
             const updateParking = {
                 status: '5',
             }
+            const parkingId = state.hostCurrentParking
             await editColabParking(parkingId, updateParking)
             /*await firestore()
                 .collection('parkings')
                 .doc(parkingId)
                 .update({
                     status: '5'
-                })*/
+                })
             dispatch({ type: "deleteParking", payload: parkingId })
-            navigation.navigate('HostRate', { mode: '2', parkingId: parkingId, afterRate: false })
+            navigation.navigate('HostRate', { mode: '2', parkingId: parkingId, afterRate: false })*/
         }
         catch (error) {
             console.log(error)

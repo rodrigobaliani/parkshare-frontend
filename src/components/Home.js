@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { StyleSheet, PermissionsAndroid, Image, View } from 'react-native'
 import { useAuth } from '../contexts/AuthContext';
-import { Icon, Button, Modal, Text, Card } from '@ui-kitten/components';
+import { Icon, Button, Modal, Text, Card, Divider } from '@ui-kitten/components';
 import MapView, { PROVIDER_GOOGLE, Marker } from 'react-native-maps'
 import SnackBar from 'react-native-snackbar-component'
 import Geolocation from '@react-native-community/geolocation';
@@ -10,6 +10,9 @@ import { useStore } from '../contexts/StoreContext';
 import firestore from '@react-native-firebase/firestore';
 import moment from 'moment'
 import * as env from "../../config"
+import { getCurrentPayment } from '../controllers/paymentMethodController';
+import { getCurrentVehicle } from '../controllers/vehicleController';
+import StarRating from 'react-native-star-rating';
 
 const Home = ({ navigation }) => {
 
@@ -41,6 +44,16 @@ const Home = ({ navigation }) => {
         <View {...props}>
             <Text category='h6'>{modalInfo.carBrand} {modalInfo.carModel}</Text>
             <Text category='s1'>Patente: {modalInfo.carPlate}</Text>
+            <View style={{flex: 1, flexDirection: 'row'}}>
+                <Text category='s1'>Calificación promedio:  </Text>
+                <StarRating
+                    disabled={true}
+                    maxStars={5}
+                    rating={4.5}
+                    fullStarColor='white'
+                    starSize={20}
+                />
+            </View>
         </View>
     );
 
@@ -65,6 +78,8 @@ const Home = ({ navigation }) => {
 
     const handleBookingButtonPress = async () => {
         setVisibleModal(false)
+        console.log(state.currentPaymentMethod)
+        console.log(state.currentVehicle)
         if (!state.currentVehicle || !state.currentPaymentMethod) {
             setError('Debe definir un vehículo y un medio de pago para continuar')
         }
@@ -113,6 +128,16 @@ const Home = ({ navigation }) => {
         }
     }
 
+    const handleAddButtonPress = async() => {
+        const defaultVehicle = await getCurrentVehicle(currentUser.uid);
+        if(!defaultVehicle) {
+            setError('Debe definir un vehículo para continuar')
+        }
+        else {
+            navigation.navigate("AddParking")
+        }
+    }
+
     const requestLocationPermission = async () => {
 
         try {
@@ -128,6 +153,7 @@ const Home = ({ navigation }) => {
                 setError("No se tienen permisos de localización")
             }
         } catch (err) {
+
             alert(err)
         }
 
@@ -158,7 +184,7 @@ const Home = ({ navigation }) => {
                         }
                     });
                 })
-        const defaultPayment = await firestore()
+       /* const defaultPayment = await firestore()
             .collection('userData')
             .doc(`${currentUser.uid}`)
             .collection('paymentMethods')
@@ -169,13 +195,17 @@ const Home = ({ navigation }) => {
             .doc(`${currentUser.uid}`)
             .collection('userVehicles')
             .where('primary', '==', true)
-            .get()
-        dispatch({ type: 'setCurrentVehicle', payload: defaultVehicle.docs[0].data() })
-        dispatch({ type: 'setCurrentPaymentMethod', payload: defaultPayment.docs[0].data() })
+            .get()*/
+        const defaultPayment = await  getCurrentPayment(currentUser.uid);
+        const defaultVehicle = await getCurrentVehicle(currentUser.uid);
+        console.log(defaultPayment)
+        console.log(defaultVehicle)
+        dispatch({ type: 'setCurrentVehicle', payload: defaultVehicle})
+        dispatch({ type: 'setCurrentPaymentMethod', payload: defaultPayment})
         const welcomeMessage = `¡Bienvenido ${currentUser.email} !`
         setMessage(welcomeMessage);
         return () => unsubscribe();
-    }, [currentUser]);
+    }, [currentUser, navigation]);
 
 
     const handleLocationButtonPress = async () => {
@@ -283,7 +313,7 @@ const Home = ({ navigation }) => {
             </MapView>
             <TopMenu showMenu={() => navigation.toggleDrawer()} />
             <Button style={styles.locationButton} appearance='filled' status='primary' accessoryLeft={renderLocationIcon} onPress={() => handleLocationButtonPress()} />
-            <Button style={styles.addButton} appearance='filled' status='primary' accessoryLeft={renderAddIcon} onPress={() => navigation.navigate("AddParking")} />
+            <Button style={styles.addButton} appearance='filled' status='primary' accessoryLeft={renderAddIcon} onPress={() => handleAddButtonPress()} />
             <SnackBar
                 visible={message.length > 0}
                 textMessage={message}

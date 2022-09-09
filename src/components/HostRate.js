@@ -54,7 +54,7 @@ const HostRate = ({ navigation, route }) => {
                             status='info'
                             style={styles.topText}
                         >
-                            El anfitrión indicó que finalizó la operación
+                            El candidato indicó que finalizó la operación
                         </Text>
                     }
                 </React.Fragment>
