@@ -131,7 +131,7 @@ const CandidateGoing = ({ navigation, route }) => {
                 }
             },
             error => alert(error.message),
-            { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000, distanceFilter: 100 }
+            { enableHighAccuracy: true, timeout: 20000, maximumAge: 3600000, distanceFilter: 100 }
         );
 
         return () => Geolocation.clearWatch(watchId);
