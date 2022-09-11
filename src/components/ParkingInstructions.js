@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, PermissionsAndroid, Image, View } from 'react-native';
+import { StyleSheet, PermissionsAndroid, Image, View, Alert, ActivityIndicator } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
-import { Icon, Button, Modal, Text, Card } from '@ui-kitten/components';
+import { Icon, Button, Modal, Text, Card, Spinner } from '@ui-kitten/components';
 import MapView, {
   PROVIDER_GOOGLE,
   Marker,
@@ -42,6 +42,8 @@ const ParkingInstructions = ({ navigation }) => {
   const [geojsonForbiddenLoaded, setGeojsonForbiddenLoaded] = useState(false);
   const { state, dispatch } = useStore();
   const mapRef = useRef();
+  const [loading, setLoading] = useState(false)
+  const [mapOpacity, setMapOpacity] = useState(1)
 
   const renderLocationIcon = (props) => (
     <Icon {...props} name='navigation-2-outline' size='giant' />
@@ -69,6 +71,8 @@ const ParkingInstructions = ({ navigation }) => {
 
   useEffect(async () => {
     try {
+      setMapOpacity(0.2)
+      setLoading(true)
       await handleLocationButtonPress();
       //let geojsonChunk = [];
       let dataAllowed = await getParkingInstructions("allowed");
@@ -77,6 +81,12 @@ const ParkingInstructions = ({ navigation }) => {
       let dataForbidden = await getParkingInstructions("forbidden");
       setGeojsonForbiddenFeatures(dataForbidden.result);
       setGeojsonForbiddenLoaded(true);
+      setLoading(false)
+      setMapOpacity(1)
+      Alert.alert(
+        "AVISO",
+        "Las indicaciones mostradas en esta sección son basadas en las Reglas Generales de Estacionamiento de CABA. Sin embargo, en caso de haber señalización contraría en la vía pública, prevalecen contra las indicadas a continuación."
+      )
     } catch (error) {
       console.log(error);
     }
@@ -115,12 +125,15 @@ const ParkingInstructions = ({ navigation }) => {
         mapRef.current.animateToRegion(newRegion);
       },
       (error) => alert(JSON.stringify(error)),
-      { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
+      { enableHighAccuracy: true, timeout: 20000, maximumAge: 3600000 }
     );
   };
 
   return (
     <React.Fragment>
+      <View style={styles.loadingSpinner}>
+        <Spinner animating={loading} size="giant" status="primary" />
+      </View>
       <MapView
         provider={PROVIDER_GOOGLE}
         style={styles.map}
@@ -149,6 +162,7 @@ const ParkingInstructions = ({ navigation }) => {
         ]}
         onRegionChangeComplete={(region) => setMapRegion(region)}
         ref={mapRef}
+        opacity={mapOpacity}
       >
         {geojsonAllowedLoaded && geojsonAllowedFeatures && (
           <Geojson
@@ -251,6 +265,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
   },
+  loadingSpinner: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center'
+  }
 });
 
 const features = {

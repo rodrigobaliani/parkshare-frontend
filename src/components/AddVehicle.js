@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { View, TouchableWithoutFeedback, KeyboardAvoidingView } from 'react-native';
-import { Button, Datepicker, Divider, Icon, Input, Layout, StyleService, useStyleSheet, Select, SelectItem, IndexPath } from '@ui-kitten/components';
+import { Button, Datepicker, Divider, Icon, Input, Layout, StyleService, useStyleSheet, Select, SelectItem, IndexPath, Spinner } from '@ui-kitten/components';
 import TopHeader from './TopHeader';
 import firestore from '@react-native-firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
 import { useStore } from '../contexts/StoreContext';
 import { addVehicle } from '../controllers/vehicleController';
 import SnackBar from 'react-native-snackbar-component';
+import {Loading} from './layout/Loading'
+import LoadingSpinner from './layout/LoadingSpinner';
 
 
 const AddVehicle = ({ navigation }) => {
@@ -20,6 +22,7 @@ const AddVehicle = ({ navigation }) => {
     const [licensePlate, setLicensePlate] = useState('');
     const [color, setColor] = useState('');
     const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false)
 
     const carBrands = [
         { type: 'Volkswagen', label: 'Volkswagen' },
@@ -28,6 +31,7 @@ const AddVehicle = ({ navigation }) => {
 
 
     const handleAddButtonPress = async () => {
+        setLoading(true)
         const validation = validateCarData()
         if (validation) {
             const vehicles = state.userVehicles
@@ -47,6 +51,7 @@ const AddVehicle = ({ navigation }) => {
                 console.log(error)
             }
         }
+        setLoading(false)
     };
 
     const validateCarData = () => {
@@ -77,14 +82,17 @@ const AddVehicle = ({ navigation }) => {
     }
 
     return (
+       <React.Fragment>
         <KeyboardAvoidingView
             style={styles.container}
             behavior={Platform.OS === 'ios' ? 'padding' : undefined}
             keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 0}>
+
             <TopHeader screenName='Agregar Nuevo Vehículo' />
-            <Layout
-                style={styles.form}
-                level='1'>
+            <Layout style={styles.form} level='1'>
+                {loading && 
+                    <LoadingSpinner animating={loading}/>
+                }
                 <Select
                     style={styles.select}
                     selectedIndex={brand}
@@ -135,6 +143,7 @@ const AddVehicle = ({ navigation }) => {
                 accentColor='#ffffff'
             />
         </KeyboardAvoidingView>
+        </React.Fragment> 
     );
 };
 
@@ -165,6 +174,24 @@ const themedStyles = StyleService.create({
     addButton: {
         marginHorizontal: 16,
         marginVertical: 24,
+    },
+    loadingSpinner: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0,
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex:999
+    },
+    controlContainer: {
+        position: 'absolute',
+        borderRadius: 4,
+        padding: 12,
+        backgroundColor: '#3366FF',
+        zIndex:999
+        
     },
 });
 
