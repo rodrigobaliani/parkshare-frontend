@@ -64,7 +64,7 @@ const PrivateParking = ({ navigation }) => {
             navigation.navigate("RouteParking")
 
         }, error => alert(JSON.stringify(error)),
-            { enableHighAccuracy: true, timeout: 20000, maximumAge: 3600000 },
+            { enableHighAccuracy: false, timeout: 20000, maximumAge: 3600000 },
         );
     }
 
@@ -148,7 +148,7 @@ useEffect(async () => {
             setMapRegion(newRegion)
             mapRef.current.animateToRegion(newRegion)
         }, error => alert(JSON.stringify(error)),
-            { enableHighAccuracy: true, timeout: 20000, maximumAge: 3600000 },
+            { enableHighAccuracy: false, timeout: 20000, maximumAge: 3600000 },
         );
     }
 
